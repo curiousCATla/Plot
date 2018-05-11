@@ -89,7 +89,7 @@ def draw(data):
                               "H", "D", "d", "|", "_", ])
     linestyles = get('linestyles', ['solid', 'dashed', 'dashdot', 'dotted'])
     for i in range(len(solList)):
-      ax.errorbar(get('x'), get('y')[i], color=colors[i],
+      ax.errorbar(get('x'), get('y')[i], color=colors[i], capsize=5, elinewidth=1,
                   marker=markers[i] if yrange is None else None,
                   markersize=get('markersize', 8) if yrange is None else None,
                   linestyle=linestyles[i], linewidth=get('linewidth', 2),
