@@ -3,7 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import copy
-import matplotlib as mpl
 
 # 用于比较S个solution的某性能指标随着过程量P变化的趋势. 不同的性能指标放在不同的图上. x轴是过程量 (比如时间), y轴是性能指标 (比如throughput或overhead)
 
@@ -26,6 +25,7 @@ data = {
   'yGrid': False,
   
   'signalingReceiveCnt': {
+    'figTitle': "",
     'yTitle': 'Signaling Receive Count',
     'x': [1, 2, 3, 4, 5, 6, 7, ],
     'y': [[300, 200, 100, 200, 300, 200, 100, ],
@@ -33,6 +33,7 @@ data = {
   },
   'signalingReceiveAmount': {
     'yTitle': 'Signaling Receive Amount',
+    'yLog': True,
     'x': [1, 2, 3, 4, 5, 6, 7, ],
     'y': [[300, 200, 100, 200, 300, 200, 100, ],
           [100, 300, 200, 100, 200, 300, 200, ]],
@@ -56,8 +57,8 @@ data = {
   }
 }
 
-if not os.path.exists('Fig'):
-  os.makedirs('Fig')
+if not os.path.exists('dist'):
+  os.makedirs('dist')
 
 
 def draw(data):
@@ -84,10 +85,11 @@ def draw(data):
           yerror[r][0][c] = y[r][c] - yrange[r][c][0]  # lower
           yerror[r][1][c] = yrange[r][c][1] - y[r][c]  # upper
     
-    colors = get('mainColors', ['C%d' % i for i in range(10)])
+    colors = get('mainColors', ['C%d' % (i % 10) for i in range(len(solList))])
     markers = get('markers', ["+", "x", "X", "o", "v", "^", "<", ">", "1", "2", "3", "4", "8", "s", "p", "P", "*", "h",
                               "H", "D", "d", "|", "_", ])
-    linestyles = get('linestyles', ['solid', 'dashed', 'dashdot', 'dotted'])
+    styles = ['solid', 'dashed', 'dashdot', 'dotted']
+    linestyles = get('linestyles', [styles[i % len(styles)] for i in range(len(solList))])
     for i in range(len(solList)):
       ax.errorbar(get('x'), get('y')[i], color=colors[i], capsize=5, elinewidth=1,
                   marker=markers[i] if yrange is None else None,
@@ -108,6 +110,8 @@ def draw(data):
     
     ax.set_ylabel(get('yTitle'), fontsize='x-large')
     ax.set_xlabel(get('xTitle'), fontsize='x-large')
+    
+    plt.title(get('figTitle'))
     
     for tick in ax.yaxis.get_major_ticks():
       tick.label.set_fontsize('x-large')
@@ -135,8 +139,10 @@ def draw(data):
     
     plt.tight_layout()
     
-    # plt.savefig('Fig/' + name + '.eps', format='eps', dpi=1000)
-    plt.show()
+    if get('show', True):
+      plt.show()
+    else:
+      plt.savefig('dist/' + name + '.eps', format='eps', dpi=1000)
 
 
 if __name__ == '__main__':

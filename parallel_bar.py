@@ -60,8 +60,8 @@ data = {
   }
 }
 
-if not os.path.exists('Fig'):
-  os.makedirs('Fig')
+if not os.path.exists('dist'):
+  os.makedirs('dist')
 
 
 def draw(data):
@@ -154,8 +154,10 @@ def draw(data):
       autoLabel(rects[i], (yrange[i][j][1] for j in range(len(envList))) if yerror else y[i])
     plt.tight_layout()
     
-    # plt.savefig('Fig/' + name + '.eps', format='eps', dpi=1000)
-    plt.show()
+    if get('show', True):
+      plt.show()
+    else:
+      plt.savefig('dist/' + name + '.eps', format='eps', dpi=1000)
 
 
 if __name__ == '__main__':
