@@ -182,7 +182,7 @@ class ParallelBars:
                   va='bottom', fontsize='small')
       
       for i in range(len(rects)):
-        autoLabel(rects[i], (yrange[i][j][1] for j in range(len(envList))) if yerror else y[i])
+        autoLabel(rects[i], (yrange[i][j][1] for j in range(len(envList))) if nonEmptyIterable(yerror) else y[i])
       plt.tight_layout()
       
       if get('display', True):
