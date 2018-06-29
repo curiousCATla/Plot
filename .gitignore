@@ -1,7 +1,5 @@
-venv
-.gradle
-.idea
-build
-gradle
-out
-/plot/__pycache__/*.pyc
+/.idea
+/Fig
+/dist
+/venv
+/__pycache__
