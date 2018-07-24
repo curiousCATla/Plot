@@ -9,7 +9,6 @@ from watchdog.observers import Observer
 
 from multiple_line import MultipleLines
 from parallel_bar import ParallelBars
-from breakdown_bar import BreakdownBars
 
 
 def ordered(obj):
@@ -51,8 +50,6 @@ class MyHandler(FileSystemEventHandler):
         ParallelBars().draw(config)
       elif type == 'multiple_lines':
         MultipleLines().draw(config)
-      elif type == 'breakdown_bars':
-        BreakdownBars().draw(config)
       else:
         raise Exception("Please specify type in json. Supported: parallel_bars, multiple_lines")
     except Exception as e:

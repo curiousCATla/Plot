@@ -1,11 +1,10 @@
 # coding=utf-8
 import ast
 import json
-
-import numpy as np
-import matplotlib.pyplot as plt
 import os
-import copy
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 # 用于比较S个solution的某性能指标随着过程量P变化的趋势. 不同的性能指标放在不同的图上. x轴是过程量 (比如时间), y轴是性能指标 (比如throughput或overhead)
 
