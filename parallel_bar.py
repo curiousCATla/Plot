@@ -198,6 +198,7 @@ class ParallelBars:
       if get('output', False):
         plt.savefig('dist/' + name + '.eps', format='eps', dpi=1000)
 
+      plt.show(block=False)
 
 if __name__ == '__main__':
   ParallelBars().draw(data)

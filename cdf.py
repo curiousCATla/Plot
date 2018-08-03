@@ -1,10 +1,8 @@
 # coding=utf-8
 import ast
 import json
-import os
 
-import matplotlib.pyplot as plt
-import numpy as np
+from multiple_line import MultipleLines
 
 # 用于绘制一个或多个量的累积分布函数
 
@@ -29,14 +27,11 @@ data = {
       'figTitle': "",
       'yTitle': '',
       'solutionList': ('Concury', 'SilkRoad'),
-      'x': [0, 0.1, 0.57, 0.63, 0.85, 0.92, 0.99, 1, 1.1, 1.1, 1.2, ],
-      'x2': [0, 0.1, 0.57, 0.63, 0.85, 0.92, 0.99, 1, 1.1, 3.1, 3.2, ],
+      'x': ([0, 0.1, 0.57, 0.63, 0.85, 0.92, 0.99, 1, 1.1, 1.1, 1.2, ],
+            [0, 0.1, 0.57, 0.63, 0.85, 0.92, 0.99, 1, 1.1, 3.1, 3.2, ])
     },
   ]
 }
-
-if not os.path.exists('dist'):
-  os.makedirs('dist')
 
 
 def iterable(obj):
@@ -59,8 +54,6 @@ class Cdf:
         data = ast.literal_eval(data)
     
     for plotData in data['children']:
-      name = plotData['name']
-      
       def get(key, default=None):
         result = plotData.get(key, None)
         if result is not None and not iterable(result) or nonEmptyIterable(result): return result
@@ -74,52 +67,39 @@ class Cdf:
       
       solList = get('solutionList')
       
-      fig, ax = plt.subplots()
-      fig.set_size_inches(get('figWidth'), get('figHeight'))
-      
-      colors = get('mainColors', ['C%d' % (i % 10) for i in range(len(solList))])
-      
       minx = float("inf")
       maxx = float("-inf")
-      X=[]
+      X = []
+      Y = []
+      inputX = get('x')
+      
       for i in range(len(solList)):
-        x = get('x%d' % (i + 1), get('x', ()) if i == 0 else ())
+        x = inputX[i]
         minx = min(minx, x[0])
         maxx = max(maxx, x[-1])
-        X.append(x)
+        
+        sum = 0
+        y = [0]
+        newX = [x[0]]
+        for v in x[1:]:
+          sum += 1
+          y.append(y[-1])
+          newX.append(v)
+          newY = sum / len(x)
+          y.append(newY)
+          newX.append(v)
+        newX.append(maxx)
+        y.append(1)
+        X.append(newX)
+        Y.append(y)
       
-      ax.hist(X, len(X[0]), density=1, histtype='step', cumulative=True, label=solList, color=colors[0:len(solList)])
-      ax.set_ylabel(get('yTitle', ""), fontsize='x-large')
-      ax.set_xlabel(get('xTitle', ""), fontsize='x-large')
-      
-      plt.title(get('figTitle', ""))
-      
-      for tick in ax.yaxis.get_major_ticks():
-        tick.label.set_fontsize('x-large')
-      
-      for tick in ax.xaxis.get_major_ticks():
-        tick.label.set_fontsize('x-large')
-      
-      if get('xLog', False):
-        ax.set_xscale('log')
-      
-      if get('xGrid', False):
-        ax.xaxis.grid(True)
-      
-      if get('yLog', False):
-        ax.set_yscale('log')
-      
-      if get('yGrid', False):
-        ax.yaxis.grid(True)
-      
-      plt.ylim([0,1])
-      
-      plt.xlim([minx, maxx])
-      
-      plt.tight_layout()
-      
-      if get('output', False):
-        plt.savefig('dist/' + name + '.eps', format='eps', dpi=1000)
+      plotData['x'] = X
+      plotData['y'] = Y
+      plotData['xLimit'] = (minx, maxx)
+      plotData['yLimit'] = (0, 1)
+      plotData['markersize'] = 0
+    data['type'] = 'multiple_lines'
+    MultipleLines().draw(data)
 
 
 if __name__ == '__main__':

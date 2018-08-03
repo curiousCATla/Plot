@@ -91,14 +91,14 @@ class MultipleLines:
     
     for plotData in data['children']:
       name = plotData['name']
-
+      
       def get(key, default=None):
         result = plotData.get(key, None)
         if result is not None and not iterable(result) or nonEmptyIterable(result): return result
-  
+        
         result = data.get(key, None)
         if result is not None and not iterable(result) or nonEmptyIterable(result): return result
-  
+        
         return default
       
       if not isinstance(plotData, dict): continue
@@ -124,8 +124,10 @@ class MultipleLines:
                      "H", "D", "d", "|", "_", ])
       styles = ['solid', 'dashed', 'dashdot', 'dotted']
       linestyles = get('linestyles', [styles[i % len(styles)] for i in range(len(solList))])
+      x = get('x')
+      y = get('y')
       for i in range(len(solList)):
-        ax.errorbar(get('x'), get('y')[i], color=colors[i], capsize=5, elinewidth=1,
+        ax.errorbar(x[i] if iterable(x[0]) else x, y[i], color=colors[i], capsize=5, elinewidth=1,
                     marker=markers[i] if yRange is None else None,
                     markersize=get('markersize', 8) if yRange is None else None,
                     linestyle=linestyles[i], linewidth=get('linewidth', 2),
@@ -133,7 +135,10 @@ class MultipleLines:
       
       handles, labels = ax.get_legend_handles_labels()
       
-      lastAndInd = list(zip((get('y')[i][-1] for i in range(len(solList))), range(len(solList))))
+      lastAndInd = list(zip(
+        (list(np.array(list(reversed(y[i]))) / np.array(list(reversed(x[i] if iterable(x[0]) else x))))
+             for i in range(len(solList))),
+        range(len(solList))))
       lastAndInd.sort(reverse=True)
       
       handles = [handles[lastAndInd[i][1]] for i in range(len(solList))]
@@ -176,6 +181,7 @@ class MultipleLines:
       if get('output', False):
         plt.savefig('dist/' + name + '.eps', format='eps', dpi=1000)
 
+      plt.show(block=False)
 
 if __name__ == '__main__':
   MultipleLines().draw(data)
