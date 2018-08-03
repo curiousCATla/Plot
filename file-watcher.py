@@ -1,4 +1,4 @@
-import json
+import json, ast
 import os
 import sys
 import time
@@ -7,9 +7,11 @@ from datetime import datetime
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
-from multiple_line import MultipleLines
-from parallel_bar import ParallelBars
+import queue
+#somewhere accessible to both:
+callback_queue = queue.Queue()
 
+from plot import Ploter
 
 def ordered(obj):
   if isinstance(obj, dict):
@@ -32,28 +34,30 @@ class MyHandler(FileSystemEventHandler):
   def work(self, path):
     try:
       f = open(path, 'r')
-      config = json.load(f)
-      
-      if ordered(self.lastJson) == ordered(config):
+      data = f.read()
+      try:
+        data = json.loads(data)
+      except:
+        try:
+          data = ast.literal_eval(data)
+        except:
+          raise Exception("Please input a valid json or python object string")
+
+      if ordered(self.lastJson) == ordered(data):
         return
-      self.lastJson = config
+      self.lastJson = data
       
       if not os.path.exists('back'):
         os.makedirs('back')
       
       fout = open('back/%s.json' % datetime.now().strftime('%Y-%B-%d-%H-%M-%S'), 'w')
-      fout.write(json.dumps(config, indent=4, sort_keys=True))
+      fout.write(json.dumps(data, indent=4, sort_keys=True))
       fout.close()
+
+      callback_queue.put(data)
       
-      type = config.get('type', None)
-      if type == 'parallel_bars':
-        ParallelBars().draw(config)
-      elif type == 'multiple_lines':
-        MultipleLines().draw(config)
-      else:
-        raise Exception("Please specify type in json. Supported: parallel_bars, multiple_lines")
     except Exception as e:
-      print(e)
+      print(e, file=sys.stderr)
     finally:
       try:
         f.close()
@@ -68,7 +72,7 @@ class MyHandler(FileSystemEventHandler):
     if os.path.normpath(event.src_path) == os.path.normpath('./last-plot-data.json'):
       self.work(event.src_path)
 
-
+import matplotlib.pyplot as plt
 if __name__ == "__main__":
   path = sys.argv[1] if len(sys.argv) > 1 else '.'
   event_handler = MyHandler()
@@ -77,7 +81,15 @@ if __name__ == "__main__":
   observer.start()
   try:
     while True:
-      time.sleep(1)
+      try:
+        data = callback_queue.get(False) #doesn't block
+        Ploter().plot(data)
+      except queue.Empty: #raised when queue is empty
+        pass
+      try:
+        plt.pause(0.5)
+      except:
+        pass
   except KeyboardInterrupt:
     observer.stop()
   observer.join()

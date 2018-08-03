@@ -3,9 +3,9 @@ import sys
 import threading
 
 import Pyro4
+import Pyro4.naming
 
-from multiple_line import MultipleLines
-from parallel_bar import ParallelBars
+from plot import Ploter
 
 with Pyro4.core.Daemon() as daemon:
   class NameServer(threading.Thread):
@@ -34,13 +34,9 @@ with Pyro4.core.Daemon() as daemon:
   startNameServer("localhost")
   ns = Pyro4.naming.locateNS()
   
-  obj = ParallelBars()
+  obj = Ploter()
   uri = daemon.register(obj)
-  ns.register("space.shouqianshi.utils.parallel_bars", uri)
-  
-  obj = MultipleLines()
-  uri = daemon.register(obj)
-  ns.register("space.shouqianshi.utils.multiple_lines", uri)
+  ns.register("space.shouqianshi.utils.ploter", uri)
   
   print("server started")
   

@@ -195,9 +195,6 @@ class ParallelBars:
       
       plt.tight_layout()
       
-      if get('display', True):
-        plt.show()
-      
       if get('output', False):
         plt.savefig('dist/' + name + '.eps', format='eps', dpi=1000)
 
