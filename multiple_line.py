@@ -3,15 +3,30 @@ import ast
 import json
 import os
 
+import matplotlib
+
+try:
+  del matplotlib.font_manager.weight_dict['roman']
+except:
+  pass
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.font_manager import FontProperties
 
 # 用于比较S个solution的某性能指标随着过程量P变化的趋势. 不同的性能指标放在不同的图上. x轴是过程量 (比如时间), y轴是性能指标 (比如throughput或overhead)
 
 data = {
   'type': "multiple_lines",
-  'figWidth': 6,
-  'figHeight': 3.5,
+  'figWidth': 600,
+  'figHeight': 350,
+  
+  'mainColors': ['#0072bc',
+                 '#d85119',
+                 '#edb021',
+                 '#7a8cbf',
+                 '#009d70',
+                 '#979797',
+                 '#53b2ea'],
   
   'solutionList': ('MDT', 'AODV'),
   'xTitle': 'Time (s)',
@@ -19,19 +34,26 @@ data = {
   'legendLoc': 'best',
   'legendColumn': 1,
   
-  'markersize': 8,
-  'linewidth': 2,
+  'markerSize': 8,
+  'lineWidth': 2,
   
   'xLog': False,
   'xGrid': False,
   'yLog': False,
   'yGrid': False,
   
+  'xFontSize': 20,
+  'xTickRotate': False,
+  'yFontSize': 20,
+  'legendFontSize': 20,
+  
   'children': [
     {
       'name': 'signalingReceiveCnt',
       'figTitle': "",
       'yTitle': 'Signaling Receive Count',
+      'xTicks&Labels': [(0,2,4,6,7), ('a', '2', 'd', 'asdf', 'dd')],
+      'xTickRotate': True,
       'x': [1, 2, 3, 4, 5, 6, 7, ],
       'y': [[300, 200, 100, 200, 300, 200, 100, ],
             [100, 300, 200, 100, 200, 300, 200, ]]
@@ -81,6 +103,9 @@ def nonEmptyIterable(obj):
   return not not len(obj)
 
 
+dpi = 100
+
+
 class MultipleLines:
   def draw(self, data):
     if isinstance(data, str):
@@ -106,7 +131,8 @@ class MultipleLines:
       solList = get('solutionList')
       
       fig, ax = plt.subplots()
-      fig.set_size_inches(get('figWidth'), get('figHeight'))
+      fig.set_size_inches(get('figWidth') / dpi, get('figHeight') / dpi)
+      fig.set_dpi(dpi)
       
       yRange = get('yRange', None)
       y = plotData['y']
@@ -129,34 +155,47 @@ class MultipleLines:
       for i in range(len(solList)):
         ax.errorbar(x[i] if iterable(x[0]) else x, y[i], color=colors[i], capsize=5, elinewidth=1,
                     marker=markers[i] if yRange is None else None,
-                    markersize=get('markersize', 8) if yRange is None else None,
-                    linestyle=linestyles[i], linewidth=get('linewidth', 2),
+                    markersize=get('markerSize', 8) if yRange is None else None,
+                    linestyle=linestyles[i], linewidth=get('lineWidth', 2),
                     label=solList[i], ecolor='r', yerr=yerror[i] if nonEmptyIterable(yRange) else None)
       
       handles, labels = ax.get_legend_handles_labels()
       
       lastAndInd = list(zip(
         (list(np.array(list(reversed(y[i]))) / np.array(list(reversed(x[i] if iterable(x[0]) else x))))
-             for i in range(len(solList))),
+         for i in range(len(solList))),
         range(len(solList))))
       lastAndInd.sort(reverse=True)
       
-      handles = [handles[lastAndInd[i][1]] for i in range(len(solList))]
-      labels = [labels[lastAndInd[i][1]] for i in range(len(solList))]
+      if get("showLegend", True):
+        handles = [handles[lastAndInd[i][1]] for i in range(len(solList))]
+        labels = [labels[lastAndInd[i][1]] for i in range(len(solList))]
+        
+        font = FontProperties('Times New Roman', weight='light', size=get('legendFontSize', 20))
+        ax.legend(handles, labels, frameon=False, loc=get('legendLoc', 'best'), prop=font,
+                  ncol=get('legendColumn', 1))
       
-      ax.legend(handles, labels, fancybox=True, shadow=True, loc=get('legendLoc', 'best'), fontsize='12',
-                ncol=get('legendColumn', 1))
+      font = FontProperties('Times New Roman', weight='light', size=get('xFontSize', 20))
+      ax.set_xlabel(get('xTitle', ""), fontproperties=font)
       
-      ax.set_ylabel(get('yTitle', ""), fontsize='x-large')
-      ax.set_xlabel(get('xTitle', ""), fontsize='x-large')
+      ticks = get('xTicks&Labels', None)
+      if ticks:
+        plt.xticks(ticks[0], ticks[1])
+      
+      font = FontProperties('sans-serif', weight='light', size=get('xFontSize', 20) - 4)
+      for tick in ax.xaxis.get_major_ticks():
+        tick.label.set_fontproperties(font)
+        if get('xTickRotate', False):
+          tick.label.set_rotation(45)
+      
+      font = FontProperties('Times New Roman', weight='light', size=get('yFontSize', 20))
+      ax.set_ylabel(get('yTitle', ""), fontproperties=font)
+      
+      font = FontProperties('sans-serif', weight='light', size=get('yFontSize', 20) - 4)
+      for tick in ax.yaxis.get_major_ticks():
+        tick.label.set_fontproperties(font)
       
       plt.title(get('figTitle', ""))
-      
-      for tick in ax.yaxis.get_major_ticks():
-        tick.label.set_fontsize('x-large')
-      
-      for tick in ax.xaxis.get_major_ticks():
-        tick.label.set_fontsize('x-large')
       
       if get('xLog', False):
         ax.set_xscale('log')
@@ -176,12 +215,16 @@ class MultipleLines:
       lim = get('xLimit', [])
       if len(lim) > 0: plt.xlim(lim)
       
-      plt.tight_layout()
+      try:
+        plt.tight_layout()
+      except:
+        pass
       
       if get('output', False):
-        plt.savefig('dist/' + name + '.eps', format='eps', dpi=1000)
-
+        plt.savefig('dist/' + name + '.eps', format='eps', dpi=dpi)
+      
       plt.show(block=False)
+
 
 if __name__ == '__main__':
   MultipleLines().draw(data)

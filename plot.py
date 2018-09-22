@@ -3,6 +3,11 @@ from multiple_line import MultipleLines
 from parallel_bar import ParallelBars
 from cdf import Cdf
 
+forth = [114, 83]
+third = [173, 122]
+half = [238, 109]
+
+
 class Ploter:
   def plot(self, data):
     if isinstance(data, str):

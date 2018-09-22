@@ -97,7 +97,7 @@ class Cdf:
       plotData['y'] = Y
       plotData['xLimit'] = (minx, maxx)
       plotData['yLimit'] = (0, 1)
-      plotData['markersize'] = 0
+      plotData['markerSize'] = 0
     data['type'] = 'multiple_lines'
     MultipleLines().draw(data)
 
