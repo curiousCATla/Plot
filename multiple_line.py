@@ -4,14 +4,23 @@ import json
 import os
 
 import matplotlib
+import matplotlib.pyplot as plt
 
 try:
   del matplotlib.font_manager.weight_dict['roman']
 except:
   pass
-import matplotlib.pyplot as plt
+
+plt.rc('text', usetex=True)
+matplotlib.rcParams.update({
+  'font.family':'serif',
+  'font.serif':['Times New Roman Bold', 'FreeSerifBold'],
+})
+
 import numpy as np
 from matplotlib.font_manager import FontProperties
+
+matplotlib.font_manager._rebuild()
 
 # 用于比较S个solution的某性能指标随着过程量P变化的趋势. 不同的性能指标放在不同的图上. x轴是过程量 (比如时间), y轴是性能指标 (比如throughput或overhead)
 
@@ -52,7 +61,7 @@ data = {
       'name': 'signalingReceiveCnt',
       'figTitle': "",
       'yTitle': 'Signaling Receive Count',
-      'xTicks&Labels': [(0,2,4,6,7), ('a', '2', 'd', 'asdf', 'dd')],
+      'xTicks&Labels': [(0, 2, 4, 6, 7), ('a', '2', 'd', 'asdf', 'dd')],
       'xTickRotate': True,
       'x': [1, 2, 3, 4, 5, 6, 7, ],
       'y': [[300, 200, 100, 200, 300, 200, 100, ],
@@ -153,7 +162,7 @@ class MultipleLines:
       x = get('x')
       y = get('y')
       for i in range(len(solList)):
-        ax.errorbar(x[i] if iterable(x[0]) else x, y[i], color=colors[i], capsize=5, elinewidth=1,
+        ax.errorbar(x[i] if iterable(x[0]) else x, y[i], color=colors[i], capsize=get("errorCapSize", 5), elinewidth=1,
                     marker=markers[i] if yRange is None else None,
                     markersize=get('markerSize', 8) if yRange is None else None,
                     linestyle=linestyles[i], linewidth=get('lineWidth', 2),
@@ -168,27 +177,46 @@ class MultipleLines:
       lastAndInd.sort(reverse=True)
       
       if get("showLegend", True):
-        handles = [handles[lastAndInd[i][1]] for i in range(len(solList))]
-        labels = [labels[lastAndInd[i][1]] for i in range(len(solList))]
+        if get("legendAutomaticallyReorder", True):
+          handles = [handles[lastAndInd[i][1]] for i in range(len(solList))]
+          labels = [labels[lastAndInd[i][1]] for i in range(len(solList))]
         
-        font = FontProperties('Times New Roman', weight='light', size=get('legendFontSize', 20))
+        font = FontProperties('serif', weight='light', size=get('legendFontSize', 20))
         ax.legend(handles, labels, frameon=False, loc=get('legendLoc', 'best'), prop=font,
                   ncol=get('legendColumn', 1))
       
-      font = FontProperties('Times New Roman', weight='light', size=get('xFontSize', 20))
+      font = FontProperties('serif', weight='light', size=get('xFontSize', 20))
       ax.set_xlabel(get('xTitle', ""), fontproperties=font)
-      
+
+      if get('xLog', False):
+        ax.set_xscale('log')
+        ax.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
+        ax.get_xaxis().get_major_formatter().labelOnlyBase = False
+
+      if get('xGrid', False):
+        ax.xaxis.grid(True)
+
+      if get('yLog', False):
+        ax.set_yscale('log')
+
+      if get('yGrid', False):
+        ax.yaxis.grid(True)
+
       ticks = get('xTicks&Labels', None)
       if ticks:
-        plt.xticks(ticks[0], ticks[1])
-      
+        plt.tick_params(which='minor', length=0)
+        if len(ticks) == 2 and iterable(ticks[0]) and iterable(ticks[1]):
+          plt.xticks(ticks[0], ticks[1])
+        else:
+          plt.xticks(ticks)
+        
       font = FontProperties('sans-serif', weight='light', size=get('xFontSize', 20) - 4)
       for tick in ax.xaxis.get_major_ticks():
         tick.label.set_fontproperties(font)
         if get('xTickRotate', False):
           tick.label.set_rotation(45)
       
-      font = FontProperties('Times New Roman', weight='light', size=get('yFontSize', 20))
+      font = FontProperties('serif', weight='light', size=get('yFontSize', 20))
       ax.set_ylabel(get('yTitle', ""), fontproperties=font)
       
       font = FontProperties('sans-serif', weight='light', size=get('yFontSize', 20) - 4)
@@ -196,18 +224,6 @@ class MultipleLines:
         tick.label.set_fontproperties(font)
       
       plt.title(get('figTitle', ""))
-      
-      if get('xLog', False):
-        ax.set_xscale('log')
-      
-      if get('xGrid', False):
-        ax.xaxis.grid(True)
-      
-      if get('yLog', False):
-        ax.set_yscale('log')
-      
-      if get('yGrid', False):
-        ax.yaxis.grid(True)
       
       lim = get('yLimit', [])
       if len(lim) > 0: plt.ylim(lim)

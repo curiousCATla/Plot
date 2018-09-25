@@ -5,12 +5,19 @@ import json
 import os
 
 import matplotlib
+import matplotlib.pyplot as plt
 
 try:
   del matplotlib.font_manager.weight_dict['roman']
 except:
   pass
-import matplotlib.pyplot as plt
+
+plt.rc('text', usetex=True)
+matplotlib.rcParams.update({
+  'font.family':'serif',
+  'font.serif':['Times New Roman', 'FreeSerifBold'],
+})
+
 import numpy as np
 from matplotlib.font_manager import FontProperties
 
@@ -194,25 +201,25 @@ class ParallelBars:
         legendTitles = solList
 
       if get("showLegend", True):
-        font = FontProperties('Times New Roman', weight='light', size=get('legendFontSize', 20))
+        font = FontProperties('serif', weight='light', size=get('legendFontSize', 20))
         ax.legend((rects[i // lenComp + lenSol * (lenComp - 1 - i % lenComp)][0] for i in range(len(rects))),
                   legendTitles, frameon=False, loc=get('legendLoc', 'best'),
                   prop=font, ncol=get('legendColumn', lenSol), handlelength=0.8)
       
-      font = FontProperties('Times New Roman', weight='light', size=get('xFontSize', 20))
+      font = FontProperties('serif', weight='light', size=get('xFontSize', 20))
       ax.set_xlabel(get('xTitle', ""), fontproperties=font)
 
       ticks = get('xTicks&Labels', None)
       if ticks:
         plt.xticks(ticks[0], ticks[1])
 
-      font = FontProperties('Times New Roman', weight='light', size=get('xFontSize', 20) - 4)
+      font = FontProperties('serif', weight='light', size=get('xFontSize', 20) - 4)
       for tick in ax.xaxis.get_major_ticks():
         tick.label.set_fontproperties(font)
         if get('xTickRotate', False):
           tick.label.set_rotation(45)
       
-      font = FontProperties('Times New Roman', weight='light', size=get('yFontSize', 20))
+      font = FontProperties('serif', weight='light', size=get('yFontSize', 20))
       ax.set_ylabel(get('yTitle', ""), fontproperties=font)
       
       font = FontProperties('sans-serif', weight='light', size=get('yFontSize', 20) - 4)

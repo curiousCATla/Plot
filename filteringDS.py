@@ -51,16 +51,16 @@ y = [
 
 data = {
   'type': "multiple_lines",
-  'figWidth': 6,
-  'figHeight': 3.5,
+  'figWidth': 600,
+  'figHeight': 350,
   
   'solutionList': ('Othello', 'Othello Fork', 'Cuckoo'),
   
   'legendLoc': 'best',
   'legendColumn': 1,
   
-  'markersize': 0,
-  'linewidth': 1,
+  'markerSize': 0,
+  'lineWidth': 1,
   
   'xLog': True,
   'xGrid': True,
