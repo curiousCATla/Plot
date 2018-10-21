@@ -11,10 +11,10 @@ try:
 except:
   pass
 
-plt.rc('text', usetex=True)
+# plt.rc('text', usetex=True)
 matplotlib.rcParams.update({
-  'font.family':'serif',
-  'font.serif':['Times New Roman Bold', 'FreeSerifBold'],
+  'font.family': 'serif',
+  'font.serif': ['Times New Roman Bold', 'FreeSerifBold'],
 })
 
 import numpy as np
@@ -107,9 +107,11 @@ def iterable(obj):
 
 def nonEmptyIterable(obj):
   """return true if *obj* is iterable"""
-  if not isinstance(obj, list) and not isinstance(obj, tuple):
+  try:
+    var = obj[1]
+    return True
+  except:
     return False
-  return not not len(obj)
 
 
 dpi = 100
@@ -176,32 +178,38 @@ class MultipleLines:
         range(len(solList))))
       lastAndInd.sort(reverse=True)
       
+      legend = None
+      
       if get("showLegend", True):
         if get("legendAutomaticallyReorder", True):
           handles = [handles[lastAndInd[i][1]] for i in range(len(solList))]
           labels = [labels[lastAndInd[i][1]] for i in range(len(solList))]
         
         font = FontProperties('serif', weight='light', size=get('legendFontSize', 20))
-        ax.legend(handles, labels, frameon=False, loc=get('legendLoc', 'best'), prop=font,
-                  ncol=get('legendColumn', 1))
+        if get("legendOutside", False):
+          legend = ax.legend(handles, labels, prop=font,
+                    ncol=1, bbox_to_anchor=(1.02, 0.5), loc="center left")
+        else:
+          legend = ax.legend(handles, labels, frameon=False, loc=get('legendLoc', 'best'), prop=font,
+                    ncol=get('legendColumn', 1))
       
       font = FontProperties('serif', weight='light', size=get('xFontSize', 20))
       ax.set_xlabel(get('xTitle', ""), fontproperties=font)
-
+      
       if get('xLog', False):
         ax.set_xscale('log')
         ax.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
         ax.get_xaxis().get_major_formatter().labelOnlyBase = False
-
+      
       if get('xGrid', False):
         ax.xaxis.grid(True)
-
+      
       if get('yLog', False):
         ax.set_yscale('log')
-
+      
       if get('yGrid', False):
         ax.yaxis.grid(True)
-
+      
       ticks = get('xTicks&Labels', None)
       if ticks:
         plt.tick_params(which='minor', length=0)
@@ -209,7 +217,7 @@ class MultipleLines:
           plt.xticks(ticks[0], ticks[1])
         else:
           plt.xticks(ticks)
-        
+      
       font = FontProperties('sans-serif', weight='light', size=get('xFontSize', 20) - 4)
       for tick in ax.xaxis.get_major_ticks():
         tick.label.set_fontproperties(font)
@@ -226,10 +234,28 @@ class MultipleLines:
       plt.title(get('figTitle', ""))
       
       lim = get('yLimit', [])
-      if len(lim) > 0: plt.ylim(lim)
+      if len(lim) > 0:
+        realLimit = lim.copy()
+        
+        if callable(lim[0]):
+          realLimit[0] = lim[0](ax.get_ylim()[0])
+        
+        if callable(lim[1]):
+          realLimit[1] = lim[1](ax.get_ylim()[1])
+        
+        plt.ylim(realLimit)
       
       lim = get('xLimit', [])
-      if len(lim) > 0: plt.xlim(lim)
+      if len(lim) > 0:
+        realLimit = lim.copy()
+        
+        if callable(lim[0]):
+          realLimit[0] = lim[0](ax.get_xlim()[0])
+        
+        if callable(lim[1]):
+          realLimit[1] = lim[1](ax.get_xlim()[1])
+        
+        plt.xlim(realLimit)
       
       try:
         plt.tight_layout()
@@ -237,10 +263,14 @@ class MultipleLines:
         pass
       
       if get('output', False):
-        plt.savefig('dist/' + name + '.eps', format='eps', dpi=dpi)
+        plt.savefig('dist/' + name + '.eps', format='eps', bbox_extra_artists=(legend,) if legend else (), dpi=dpi, bbox_inches="tight")
+        plt.savefig('dist/' + name + '.png', format='png', bbox_extra_artists=(legend,) if legend else (), dpi=dpi, bbox_inches="tight")
       
       plt.show(block=False)
 
 
 if __name__ == '__main__':
   MultipleLines().draw(data)
+  
+  while True:
+    plt.pause(0.5)

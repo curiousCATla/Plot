@@ -12,10 +12,10 @@ try:
 except:
   pass
 
-plt.rc('text', usetex=True)
+# plt.rc('text', usetex=True)
 matplotlib.rcParams.update({
-  'font.family':'serif',
-  'font.serif':['Times New Roman', 'FreeSerifBold'],
+  'font.family': 'serif',
+  'font.serif': ['Times New Roman', 'FreeSerifBold'],
 })
 
 import numpy as np
@@ -40,8 +40,6 @@ data = {
   'solutionList': ('VERID', 'AAR', 'IntegriDB'),
   'environmentList': ("Intel", "Rome"),
   
-  'legendLoc': 'upper center',
-  
   'yLog': False,
   'yGrid': False,
   
@@ -61,7 +59,6 @@ data = {
       'xTitle': '',
       'yTitle': 'Insertion time (ms)',
       'components': ("Acyclic add", "Cyclic add"),
-      'legendLoc': 'upper left',
       'yLimit': [0, 1.4],
       'y': (
         (0.011, 0.203),  # 同一个solution, 不同的environment
@@ -114,9 +111,11 @@ def iterable(obj):
 
 def nonEmptyIterable(obj):
   """return true if *obj* is iterable"""
-  if not isinstance(obj, list) and not isinstance(obj, tuple):
+  try:
+    var = obj[1]
+    return True
+  except:
     return False
-  return not not len(obj)
 
 
 dpi = 100
@@ -199,20 +198,20 @@ class ParallelBars:
         legendTitles = list((sol + ' - ' + com for sol, com in itertools.product(components, solList, )))
       else:
         legendTitles = solList
-
+      
       if get("showLegend", True):
         font = FontProperties('serif', weight='light', size=get('legendFontSize', 20))
         ax.legend((rects[i // lenComp + lenSol * (lenComp - 1 - i % lenComp)][0] for i in range(len(rects))),
-                  legendTitles, frameon=False, loc=get('legendLoc', 'best'),
-                  prop=font, ncol=get('legendColumn', lenSol), handlelength=0.8)
+                  legendTitles, prop=font, bbox_to_anchor=(0, 1.02, 1, 0.2 * lenComp), loc="lower left",
+                  mode="expand", borderaxespad=0, ncol=lenSol)
       
       font = FontProperties('serif', weight='light', size=get('xFontSize', 20))
       ax.set_xlabel(get('xTitle', ""), fontproperties=font)
-
+      
       ticks = get('xTicks&Labels', None)
       if ticks:
         plt.xticks(ticks[0], ticks[1])
-
+      
       font = FontProperties('serif', weight='light', size=get('xFontSize', 20) - 4)
       for tick in ax.xaxis.get_major_ticks():
         tick.label.set_fontproperties(font)
@@ -236,7 +235,20 @@ class ParallelBars:
         ax.yaxis.grid(True)
       
       lim = get('yLimit', [])
-      if len(lim) == 2: plt.ylim(lim)
+      if len(lim) > 0:
+        realLimit = lim.copy()
+        
+        if callable(lim[0]):
+          realLimit[0] = lim[0](ax.get_ylim()[0])
+        
+        if callable(lim[1]):
+          realLimit[1] = lim[1](ax.get_ylim()[1])
+        
+        plt.ylim(lim)
+      
+      lim = get('xLimit', [])
+      if len(lim) > 0:
+        plt.xlim(lim)
       
       try:
         plt.tight_layout()
@@ -244,10 +256,14 @@ class ParallelBars:
         pass
       
       if get('output', False):
-        plt.savefig('dist/' + name + '.eps', format='eps', dpi=dpi)
+        plt.savefig('dist/' + name + '.eps', format='eps', dpi=dpi, bbox_inches="tight")
+        plt.savefig('dist/' + name + '.png', format='png', dpi=dpi, bbox_inches="tight")
       
       plt.show(block=False)
 
 
 if __name__ == '__main__':
   ParallelBars().draw(data)
+  
+  while True:
+    plt.pause(0.5)

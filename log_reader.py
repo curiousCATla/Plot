@@ -4,13 +4,13 @@ import re, json
 class LogReader:
   def __init__(self, path="./output.txt"):
     self.path = path
-    
+  
   def getData(self):
     stack = []
     data = None
-  
+    
     f = open(self.path, "r")
-  
+    
     for line in f.readlines():
       line = re.sub("^[ |]+", "", line)
       if line.startswith("->"):
@@ -23,7 +23,7 @@ class LogReader:
         stack[-1]["counters"].append(counter)
       else:
         name = re.split("[\[\]]", line)[1]
-      
+        
         if line.startswith('+'):
           new = {"name": name, "time": -1, "children": [], "counters": []}
           if len(stack):
@@ -33,8 +33,12 @@ class LogReader:
           us = line[line.rfind(" ") + 1: -3]
           us = int(us)
           stack[-1]["time"] = us
+          if len(stack[-1]["counters"]) == 0:
+            del stack[-1]["counters"]
+          if len(stack[-1]["children"]) == 0:
+            del stack[-1]["children"]
           data = stack.pop()
-  
+    
     f.close()
-  
+    
     return data
