@@ -109,9 +109,9 @@ class ParallelBars:
         data = json.loads(data)
       except:
         data = ast.literal_eval(data)
-
+    
     axes = []
-
+    
     for plotData in data['children']:
       name = plotData['name']
       
@@ -142,13 +142,13 @@ class ParallelBars:
         fig, ax = figure, axis
       else:
         fig, ax = plt.subplots()
-      
+        
         fig.set_size_inches(get('figWidth') / dpi, get('figHeight') / dpi)
         fig.set_dpi(dpi)
       
       rects = []
       oldy = ((0,) * len(envList),) * lenSol
-      for i in range(1, lenComp + 1):
+      for i in range(lenComp, 0, -1):
         yRange = get('yRange' if i == 1 else 'yRange%d' % i, None)
         y = plotData['y' if i == 1 else 'y%d' % i]
         
@@ -175,14 +175,14 @@ class ParallelBars:
             ax.bar(envIndex - groupWidth / 2 + width * (sol + 0.5) + marginInner, y[sol], width - marginInner,
                    bottom=oldy[sol], color=colors[(i - 1) * lenSol + sol], ecolor='r',
                    yerr=yError[sol] if yError is not None else None))
-        oldy = y
+        oldy += y
       
       ax.set_xticks(envIndex)
       ax.set_xticklabels(get('environmentList'))
       
       ax.set_xlim([0 - groupWidth / 2 - paddingLeft, len(envList) - 1 + groupWidth / 2 + get('paddingRight', 0)])
       if len(components):
-        legendTitles = list((sol + ' - ' + com for sol, com in itertools.product(components, solList, )))
+        legendTitles = list((com + ' - ' + sol for sol, com in itertools.product(solList, components, )))
       else:
         legendTitles = solList
       
@@ -259,7 +259,7 @@ class ParallelBars:
       plt.show(block=False)
       
       axes.append(ax)
-
+    
     return axes
 
 
