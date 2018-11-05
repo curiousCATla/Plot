@@ -3,30 +3,15 @@ import ast
 import itertools
 import json
 import os
-
 import matplotlib
 import matplotlib.pyplot as plt
-
-try:
-  del matplotlib.font_manager.weight_dict['roman']
-except:
-  pass
-
-# plt.rc('text', usetex=True)
-matplotlib.rcParams.update({
-  'font.family': 'serif',
-  'font.serif': ['Times New Roman', 'FreeSerifBold'],
-})
-
-import numpy as np
 from matplotlib.font_manager import FontProperties
-
-matplotlib.font_manager._rebuild()
+import numpy as np
 
 # 用于比较S个solution在E个environment上的性能差别. 不同的性能指标放在不同的图上, 不同的解决方案在各个环境下的同一指标值放在同一张图上
 
 data = {
-  'type': "parallel_bars",
+  'type': "bar",
   'figWidth': 600,
   'figHeight': 350,
   'mainColors': ['#0072bc',
@@ -105,14 +90,10 @@ if not os.path.exists('dist'):
   os.makedirs('dist')
 
 
-def iterable(obj):
-  return isinstance(obj, list) or isinstance(obj, tuple)
-
-
 def nonEmptyIterable(obj):
   """return true if *obj* is iterable"""
   try:
-    var = obj[1]
+    var = obj[0]
     return True
   except:
     return False
@@ -122,22 +103,24 @@ dpi = 100
 
 
 class ParallelBars:
-  def draw(self, data):
+  def draw(self, data, figure=None, axis=None):
     if isinstance(data, str):
       try:
         data = json.loads(data)
       except:
         data = ast.literal_eval(data)
-    
+
+    axes = []
+
     for plotData in data['children']:
       name = plotData['name']
       
       def get(key, default=None):
         result = plotData.get(key, None)
-        if result is not None and not iterable(result) or nonEmptyIterable(result): return result
+        if result is not None: return result
         
         result = data.get(key, None)
-        if result is not None and not iterable(result) or nonEmptyIterable(result): return result
+        if result is not None: return result
         
         return default
       
@@ -155,9 +138,13 @@ class ParallelBars:
       
       colors = get('mainColors', ['C%d' % (i % 10) for i in range(100)])
       
-      fig, ax = plt.subplots()
-      fig.set_size_inches(get('figWidth') / dpi, get('figHeight') / dpi)
-      fig.set_dpi(dpi)
+      if figure and axis:
+        fig, ax = figure, axis
+      else:
+        fig, ax = plt.subplots()
+      
+        fig.set_size_inches(get('figWidth') / dpi, get('figHeight') / dpi)
+        fig.set_dpi(dpi)
       
       rects = []
       oldy = ((0,) * len(envList),) * lenSol
@@ -193,7 +180,7 @@ class ParallelBars:
       ax.set_xticks(envIndex)
       ax.set_xticklabels(get('environmentList'))
       
-      plt.xlim([0 - groupWidth / 2 - paddingLeft, len(envList) - 1 + groupWidth / 2 + get('paddingRight', 0)])
+      ax.set_xlim([0 - groupWidth / 2 - paddingLeft, len(envList) - 1 + groupWidth / 2 + get('paddingRight', 0)])
       if len(components):
         legendTitles = list((sol + ' - ' + com for sol, com in itertools.product(components, solList, )))
       else:
@@ -210,7 +197,12 @@ class ParallelBars:
       
       ticks = get('xTicks&Labels', None)
       if ticks:
-        plt.xticks(ticks[0], ticks[1])
+        ax.tick_params(which='minor', length=0)
+        if len(ticks) == 2 and nonEmptyIterable(ticks[0]) and nonEmptyIterable(ticks[1]):
+          ax.set_xticks(ticks[0])
+          ax.set_xticklabels(ticks[1])
+        else:
+          ax.set_xticks(ticks)
       
       font = FontProperties('serif', weight='light', size=get('xFontSize', 20) - 4)
       for tick in ax.xaxis.get_major_ticks():
@@ -238,28 +230,37 @@ class ParallelBars:
       if len(lim) > 0:
         realLimit = lim.copy()
         
-        if callable(lim[0]):
-          realLimit[0] = lim[0](ax.get_ylim()[0])
+        for i in range(2):
+          if callable(lim[i]):
+            realLimit[i] = lim[i](ax.get_ylim()[i])
         
-        if callable(lim[1]):
-          realLimit[1] = lim[1](ax.get_ylim()[1])
-        
-        plt.ylim(lim)
+        ax.set_ylim(realLimit)
       
       lim = get('xLimit', [])
       if len(lim) > 0:
-        plt.xlim(lim)
+        ax.set_xlim(lim)
+      
+      subAxes = []
+      for subfigure in get('subfigures', []):
+        from .plot import Ploter
+        subAxes.append(Ploter().plot(subfigure, fig, ax))
+      
+      # TODO add subfigures
       
       try:
-        plt.tight_layout()
+        fig.tight_layout()
       except:
         pass
       
       if get('output', False):
-        plt.savefig('dist/' + name + '.eps', format='eps', dpi=dpi, bbox_inches="tight")
-        plt.savefig('dist/' + name + '.png', format='png', dpi=dpi, bbox_inches="tight")
+        fig.savefig('dist/' + name + '.eps', format='eps', dpi=dpi, bbox_inches="tight")
+        fig.savefig('dist/' + name + '.png', format='png', dpi=dpi, bbox_inches="tight")
       
       plt.show(block=False)
+      
+      axes.append(ax)
+
+    return axes
 
 
 if __name__ == '__main__':

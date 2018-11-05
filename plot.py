@@ -1,4 +1,20 @@
 import json, ast, sys
+
+import matplotlib
+from matplotlib.font_manager import FontProperties
+
+try:
+  del matplotlib.font_manager.weight_dict['roman']
+except:
+  pass
+
+# plt.rc('text', usetex=True)
+matplotlib.rcParams.update({
+  'font.family': 'serif',
+  'font.serif': ['Times New Roman Bold', 'FreeSerifBold'],
+})
+matplotlib.font_manager._rebuild()
+
 from multiple_line import MultipleLines
 from parallel_bar import ParallelBars
 from cdf import Cdf
@@ -9,7 +25,7 @@ half = [238, 109]
 
 
 class Ploter:
-  def plot(self, data):
+  def plot(self, data, fig=None, ax=None):
     if isinstance(data, str):
       try:
         data = json.loads(data)
@@ -23,11 +39,11 @@ class Ploter:
       raise Exception("Please input a valid json or python object string, or an object")
     
     type = data.get('type', None)
-    if type == 'parallel_bars':
-      ParallelBars().draw(data)
-    elif type == 'multiple_lines':
-      MultipleLines().draw(data)
+    if type == 'bar':
+      ParallelBars().draw(data, fig, ax)
+    elif type == 'line':
+      MultipleLines().draw(data, fig, ax)
     elif type == 'cdf':
-      Cdf().draw(data)
+      Cdf().draw(data, fig, ax)
     else:
-      raise Exception("Please specify type in json. Supported: parallel_bars, multiple_lines, cdf")
+      raise Exception("Please specify type in json. Supported: bar, line, cdf")

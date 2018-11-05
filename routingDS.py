@@ -3,7 +3,6 @@ import re
 
 import numpy as np
 import matplotlib.pyplot as plt
-from sympy import list2numpy
 
 lc = 512
 

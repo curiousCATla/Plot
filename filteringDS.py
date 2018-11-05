@@ -50,7 +50,7 @@ y = [
 ]
 
 data = {
-  'type': "multiple_lines",
+  'type': "line",
   'figWidth': 600,
   'figHeight': 350,
   

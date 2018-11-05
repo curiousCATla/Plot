@@ -46,7 +46,7 @@ def nonEmptyIterable(obj):
 
 
 class Cdf:
-  def draw(self, data):
+  def draw(self, data, figure=None, axis=None):
     if isinstance(data, str):
       try:
         data = json.loads(data)
@@ -98,8 +98,8 @@ class Cdf:
       plotData['xLimit'] = (minx, maxx)
       plotData['yLimit'] = (0, 1)
       plotData['markerSize'] = 0
-    data['type'] = 'multiple_lines'
-    MultipleLines().draw(data)
+    data['type'] = 'line'
+    MultipleLines().draw(data, figure, axis)
 
 
 if __name__ == '__main__':

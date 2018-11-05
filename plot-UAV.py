@@ -21,7 +21,7 @@ for speed in [2, 5, 10, 15, 20]:
     trafficFile.close()
     
     data = {
-      'type': "multiple_lines",
+      'type': "line",
       'show': False,
       'figWidth': 12,
       'figHeight': 7,
@@ -93,7 +93,7 @@ for speed in [2, 5, 10, 15, 20]:
           trafficSum[1][d][i] += trafficData[t][d][i]
     
     data = {
-      'type': "multiple_lines",
+      'type': "line",
       'show': False,
       'figWidth': 12,
       'figHeight': 7,
@@ -164,7 +164,7 @@ for speed in [2, 5, 10, 15, 20]:
     memoryFile.close()
     
     data = {
-      'type': "multiple_lines",
+      'type': "line",
       'show': False,
       'figWidth': 12,
       'figHeight': 7,
@@ -218,7 +218,7 @@ for speed in [2, 5, 10, 15, 20]:
           tableSum[1][d][i] += memoryData[t][d][i]
     
     data = {
-      'type': "multiple_lines",
+      'type': "line",
       'show': False,
       'figWidth': 12,
       'figHeight': 7,
