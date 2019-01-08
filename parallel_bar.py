@@ -15,7 +15,7 @@ data = {
   'figWidth': 600,
   'figHeight': 350,
   'mainColors': ['#0072bc',
-                 '#d85119',
+                 '#d95218',
                  '#edb021',
                  '#7a8cbf',
                  '#009d70',
@@ -147,7 +147,7 @@ class ParallelBars:
         fig.set_dpi(dpi)
       
       rects = []
-      oldy = ((0,) * len(envList),) * lenSol
+      oldy = [[0,] * len(envList),] * lenSol
       for i in range(lenComp, 0, -1):
         yRange = get('yRange' if i == 1 else 'yRange%d' % i, None)
         y = plotData['y' if i == 1 else 'y%d' % i]
@@ -188,9 +188,15 @@ class ParallelBars:
       
       if get("showLegend", True):
         font = FontProperties('serif', weight='light', size=get('legendFontSize', 20))
-        ax.legend((rects[i // lenComp + lenSol * (lenComp - 1 - i % lenComp)][0] for i in range(len(rects))),
-                  legendTitles, prop=font, bbox_to_anchor=(0, 1.02, 1, 0.2 * lenComp), loc="lower left",
-                  mode="expand", borderaxespad=0, ncol=lenSol)
+
+        if get("legendLoc", None) is None and get("legendOutside", True):
+          ax.legend((rects[i // lenComp + lenSol * (lenComp - 1 - i % lenComp)][0] for i in range(len(rects))),
+                    legendTitles, prop=font, bbox_to_anchor=(0, 1.02, 1, 0.2 * lenComp), loc="lower left",
+                    mode="expand", borderaxespad=0, ncol=lenSol)
+        else:
+          legend = ax.legend((rects[i // lenComp + lenSol * (lenComp - 1 - i % lenComp)][0] for i in range(len(rects))),
+                             legendTitles, frameon=False, loc=get('legendLoc', 'best'), prop=font,
+                             ncol=get('legendColumn', 1))
       
       font = FontProperties('serif', weight='light', size=get('xFontSize', 20))
       ax.set_xlabel(get('xTitle', ""), fontproperties=font)
