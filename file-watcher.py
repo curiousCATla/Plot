@@ -43,8 +43,12 @@ class MyHandler(FileSystemEventHandler):
         except:
           raise Exception("Please input a valid json or python object string")
 
-      if ordered(self.lastJson) == ordered(data):
-        return
+      try:
+        if ordered(self.lastJson) == ordered(data):
+          return
+      except:
+        pass
+      
       self.lastJson = data
       
       if not os.path.exists('back'):

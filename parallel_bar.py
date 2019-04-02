@@ -147,7 +147,7 @@ class ParallelBars:
         fig.set_dpi(dpi)
       
       rects = []
-      oldy = [[0,] * len(envList),] * lenSol
+      oldy = [[0, ] * len(envList), ] * lenSol
       for i in range(lenComp, 0, -1):
         yRange = get('yRange' if i == 1 else 'yRange%d' % i, None)
         y = plotData['y' if i == 1 else 'y%d' % i]
@@ -169,12 +169,17 @@ class ParallelBars:
                 yError[r][1][c] = yerror[r][c][0]  # upper
           else:
             yError = None
+
+        highContrast = get("highContrast", False)
         
         for sol in range(lenSol):
           rects.append(
             ax.bar(envIndex - groupWidth / 2 + width * (sol + 0.5) + marginInner, y[sol], width - marginInner,
-                   bottom=oldy[sol], color=colors[(i - 1) * lenSol + sol], ecolor='r',
-                   yerr=yError[sol] if yError is not None else None))
+                   bottom=oldy[sol],
+                   color='none' if highContrast else colors[(i - 1) * lenSol + sol],
+                   edgecolor=colors[(i - 1) * lenSol + sol] if highContrast else "black",
+                   hatch=['/', '\\', '-', '+', 'x', '.', 'o', 'O', '*', '//', '\\\\'][(i - 1) * lenSol + sol] if highContrast else None,
+                   ecolor='r', yerr=yError[sol] if yError is not None else None))
         oldy += y
       
       ax.set_xticks(envIndex)
@@ -186,9 +191,10 @@ class ParallelBars:
       else:
         legendTitles = solList
       
+      
       if get("showLegend", True):
         font = FontProperties('serif', weight='light', size=get('legendFontSize', 20))
-
+        
         if get("legendLoc", None) is None and get("legendOutside", True):
           ax.legend((rects[i // lenComp + lenSol * (lenComp - 1 - i % lenComp)][0] for i in range(len(rects))),
                     legendTitles, prop=font, bbox_to_anchor=(0, 1.02, 1, 0.2 * lenComp), loc="lower left",

@@ -8,6 +8,7 @@ try:
 except:
   pass
 
+import matplotlib.pyplot as plt
 # plt.rc('text', usetex=True)
 matplotlib.rcParams.update({
   'font.family': 'serif',
@@ -29,15 +30,19 @@ class Ploter:
     if isinstance(data, str):
       try:
         data = json.loads(data)
-      except:
+      except Exception as e1:
         try:
           data = ast.literal_eval(data)
-        except:
+        except Exception as e2:
+          print(e1)
+          print(e2)
           raise Exception("Please input a valid json or python object string")
-    
+
     if not isinstance(data, dict):
       raise Exception("Please input a valid json or python object string, or an object")
-    
+
+    plt.rc('text', usetex=data.get('usetex', False))
+
     type = data.get('type', None)
     if type == 'bar':
       ParallelBars().draw(data, fig, ax)
