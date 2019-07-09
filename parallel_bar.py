@@ -130,14 +130,16 @@ class ParallelBars:
       components = get('components', ())
       lenComp = max(1, len(components))
       
-      groupWidth = 1 - get('margin')
       envIndex = np.arange(len(envList))  # the x locations for the groups
-      width = groupWidth / lenSol - get('marginInner')  # the width of the bars
-      paddingLeft = get('paddingLeft', 0)
-      marginInner = get('marginInner', 0)
-      
-      colors = get('mainColors', ['C%d' % (i % 10) for i in range(100)])
-      
+      groupWidth = 1 - get('margin', 0.2)
+      paddingLeft = get('paddingLeft', 0.1)
+      paddingRight = get('paddingRight', 0.1)
+      marginInner = get('marginInner', 0.02)
+      width = groupWidth / lenSol - marginInner  # the width of the bars
+
+      colors = get('mainColors',  # ['C%d' % (i % 10) for i in range(100)])
+                   ['#0072bc', '#d95218', '#edb021', '#7a8cbf', '#009d70', '#979797', '#53b2ea'])
+
       if figure and axis:
         fig, ax = figure, axis
       else:
@@ -185,7 +187,7 @@ class ParallelBars:
       ax.set_xticks(envIndex)
       ax.set_xticklabels(get('environmentList'))
       
-      ax.set_xlim([0 - groupWidth / 2 - paddingLeft, len(envList) - 1 + groupWidth / 2 + get('paddingRight', 0)])
+      ax.set_xlim([0 - groupWidth / 2 - paddingLeft, len(envList) - 1 + groupWidth / 2 + paddingRight])
       if len(components):
         legendTitles = list((com + ' - ' + sol for sol, com in itertools.product(solList, components, )))
       else:
@@ -200,7 +202,7 @@ class ParallelBars:
                     legendTitles, prop=font, bbox_to_anchor=(0, 1.02, 1, 0.2 * lenComp), loc="lower left",
                     mode="expand", borderaxespad=0, ncol=lenSol)
         else:
-          legend = ax.legend((rects[i // lenComp + lenSol * (lenComp - 1 - i % lenComp)][0] for i in range(len(rects))),
+          ax.legend((rects[i // lenComp + lenSol * (lenComp - 1 - i % lenComp)][0] for i in range(len(rects))),
                              legendTitles, frameon=False, loc=get('legendLoc', 'best'), prop=font,
                              ncol=get('legendColumn', 1))
       

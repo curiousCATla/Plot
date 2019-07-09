@@ -139,9 +139,11 @@ class MultipleLines:
             yerror[r][0][c] = y[r][c] - yRange[r][c][0]  # lower
             yerror[r][1][c] = yRange[r][c][1] - y[r][c]  # upper
 
-      colors = get('mainColors', ['C%d' % (i % 10) for i in range(len(solList))])
+      colors = get('mainColors',  # ['C%d' % (i % 10) for i in range(100)])
+                   ['#0072bc', '#d95218', '#edb021', '#7a8cbf', '#009d70', '#979797', '#53b2ea'])
+
       markers = get('markers',
-                    ["o", "v", "^", "<", ">", "+", "x", "X", "1", "2", "3", "4", "8", "s", "p", "P", "*", "h",
+                    ["o", "x", "v", "s", "1", "2", "3", "4", "p", "^", "*", "<", ">", "+", "X", "8", "P", "h",
                      "H", "D", "d", "|", "_", ])
       styles = ['solid', 'dashed', 'dashdot', 'dotted']
       linestyles = get('linestyles', [styles[i % len(styles)] for i in range(len(solList))])

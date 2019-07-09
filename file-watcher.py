@@ -1,4 +1,4 @@
-import json, ast
+import rapidjson, ast
 import os
 import sys
 import time
@@ -26,17 +26,17 @@ class MyHandler(FileSystemEventHandler):
   def __init__(self):
     try:
       f = open('last-plot-data.json', 'r')
-      self.lastJson = json.load(f)
+      self.lastJson = rapidjson.load(f)
       f.close()
     except:
-      self.lastJson = json.loads('{}')
-  
+      self.lastJson = rapidjson.loads('{}')
+
   def work(self, path):
     try:
       f = open(path, 'r')
       data = f.read()
       try:
-        data = json.loads(data)
+        data = rapidjson.loads(data)
       except:
         try:
           data = ast.literal_eval(data)
@@ -48,18 +48,18 @@ class MyHandler(FileSystemEventHandler):
           return
       except:
         pass
-      
+
       self.lastJson = data
-      
+
       if not os.path.exists('back'):
         os.makedirs('back')
-      
+
       fout = open('back/%s.json' % datetime.now().strftime('%Y-%B-%d-%H-%M-%S'), 'w')
-      fout.write(json.dumps(data, indent=4, sort_keys=True))
+      fout.write(rapidjson.dumps(data, indent=4, sort_keys=True))
       fout.close()
 
       callback_queue.put(data)
-      
+
     except Exception as e:
       print(e, file=sys.stderr)
     finally:
@@ -67,11 +67,11 @@ class MyHandler(FileSystemEventHandler):
         f.close()
       except:
         pass
-  
+
   def on_created(self, event):
     if os.path.normpath(event.src_path) == os.path.normpath('./last-plot-data.json'):
       self.work(event.src_path)
-  
+
   def on_modified(self, event):
     if os.path.normpath(event.src_path) == os.path.normpath('./last-plot-data.json'):
       self.work(event.src_path)

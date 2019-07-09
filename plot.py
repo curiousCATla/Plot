@@ -18,6 +18,7 @@ matplotlib.font_manager._rebuild()
 
 from multiple_line import MultipleLines
 from parallel_bar import ParallelBars
+from annotated_bar import AnnotatedBars
 from cdf import Cdf
 
 forth = [114, 83]
@@ -50,5 +51,7 @@ class Ploter:
       MultipleLines().draw(data, fig, ax)
     elif type == 'cdf':
       Cdf().draw(data, fig, ax)
+    elif type == 'annotated_bar':
+      AnnotatedBars().draw(data, fig, ax)
     else:
       raise Exception("Please specify type in json. Supported: bar, line, cdf")
