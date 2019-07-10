@@ -137,8 +137,8 @@ class ParallelBars:
       marginInner = get('marginInner', 0.02)
       width = groupWidth / lenSol - marginInner  # the width of the bars
 
-      colors = get('mainColors',  # ['C%d' % (i % 10) for i in range(100)])
-                   ['#0072bc', '#d95218', '#edb021', '#7a8cbf', '#009d70', '#979797', '#53b2ea'])
+      colors = get('mainColors',
+                   ['#0072bc', '#d95218', '#edb021', '#7a8cbf', '#009d70', '#979797', '#53b2ea'] + ['C%d' % (i % 10) for i in range(100)])
 
       if figure and axis:
         fig, ax = figure, axis
@@ -149,7 +149,7 @@ class ParallelBars:
         fig.set_dpi(dpi)
       
       rects = []
-      oldy = [[0, ] * len(envList), ] * lenSol
+      oldy = np.array([[0.0, ] * len(envList), ] * lenSol)
       for i in range(lenComp, 0, -1):
         yRange = get('yRange' if i == 1 else 'yRange%d' % i, None)
         y = plotData['y' if i == 1 else 'y%d' % i]
@@ -178,7 +178,7 @@ class ParallelBars:
           rects.append(
             ax.bar(envIndex - groupWidth / 2 + width * (sol + 0.5) + marginInner, y[sol], width - marginInner,
                    bottom=oldy[sol],
-                   color='none' if highContrast else colors[(i - 1) * lenSol + sol],
+                   color='none' if highContrast else colors[((i - 1) * lenSol + sol)%len(colors)],
                    edgecolor=colors[(i - 1) * lenSol + sol] if highContrast else "black",
                    hatch=['/', '\\', '-', '+', 'x', '.', 'o', 'O', '*', '//', '\\\\'][(i - 1) * lenSol + sol] if highContrast else None,
                    ecolor='r', yerr=yError[sol] if yError is not None else None))
@@ -204,7 +204,7 @@ class ParallelBars:
         else:
           ax.legend((rects[i // lenComp + lenSol * (lenComp - 1 - i % lenComp)][0] for i in range(len(rects))),
                              legendTitles, frameon=False, loc=get('legendLoc', 'best'), prop=font,
-                             ncol=get('legendColumn', 1))
+                             ncol=get('legendColumn', 1), handlelength=1)
       
       font = FontProperties('serif', weight='light', size=get('xFontSize', 20))
       ax.set_xlabel(get('xTitle', ""), fontproperties=font)
