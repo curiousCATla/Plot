@@ -108,10 +108,9 @@ class AnnotatedBars:
       paddingRight = get('paddingRight', 0.1)
       marginInner = get('marginInner', 0.02)
       width = groupWidth / lenSol - marginInner  # the width of the bars
-      
-      colors = get('mainColors',  # ['C%d' % (i % 10) for i in range(100)])
-                   ['#0072bc', '#d95218', '#edb021', '#7a8cbf', '#009d70', '#979797', '#53b2ea'])
-      
+
+      colors = get('mainColors', ['#0072bc', '#d95218', '#edb021', '#7a8cbf', '#009d70', '#979797', '#53b2ea', "#ee4c9c"] + ['C%d' % (i % 10) for i in range(100)])
+
       highContrast = get("highContrast", False)
       
       if figure and axis:
@@ -129,7 +128,7 @@ class AnnotatedBars:
       
       for solIdx in range(lenSol):
         for comIdx in range(lenComp[solIdx]):
-          rectSet = ax.bar(envIndex - groupWidth / 2 + width * (solIdx + 0.5) + marginInner,
+          rectSet = ax.bar(envIndex - groupWidth / 2 + width * (solIdx + 0.5) + 2 * marginInner,
                         y[solIdx][comIdx],
                         width - marginInner,
                         bottom=oldy[solIdx],
@@ -215,16 +214,19 @@ class AnnotatedBars:
       
       font = FontProperties('serif', weight='light', size=get('xFontSize', 20))
       ax.set_xlabel(get('xTitle', ""), fontproperties=font)
-      
-      ticks = get('xTicks&Labels', None)
+
+      ticks = get('yTicks&Labels', None)
       if ticks:
-        ax.tick_params(which='minor', length=0)
+        ax.ticklabel_format(style='plain', axis='y')
         if len(ticks) == 2 and nonEmptyIterable(ticks[0]) and nonEmptyIterable(ticks[1]):
-          ax.set_xticks(ticks[0])
-          ax.set_xticklabels(ticks[1])
+          ax.set_yticks(ticks[0])
+          ax.set_yticklabels(ticks[1])
         else:
-          ax.set_xticks(ticks)
-      
+          ax.set_yticks(ticks)
+  
+        ax.get_yaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
+        ax.get_yaxis().set_minor_formatter(matplotlib.ticker.NullFormatter())
+
       font = FontProperties('serif', weight='light', size=get('xFontSize', 20) - 4)
       for tick in ax.xaxis.get_major_ticks():
         tick.label.set_fontproperties(font)

@@ -9,6 +9,7 @@ from matplotlib.font_manager import FontProperties
 import numpy as np
 
 # 用于比较S个solution在E个environment上的性能差别. 不同的性能指标放在不同的图上, 不同的解决方案在各个环境下的同一指标值放在同一张图上
+from matplotlib.ticker import FormatStrFormatter
 
 data = {
   'type': "bar",
@@ -136,10 +137,11 @@ class ParallelBars:
       paddingRight = get('paddingRight', 0.1)
       marginInner = get('marginInner', 0.02)
       width = groupWidth / lenSol - marginInner  # the width of the bars
-
+      
       colors = get('mainColors',
-                   ['#0072bc', '#d95218', '#edb021', '#7a8cbf', '#009d70', '#979797', '#53b2ea'] + ['C%d' % (i % 10) for i in range(100)])
-
+                   ['#0072bc', '#d95218', '#edb021', '#7a8cbf', '#009d70', '#979797', '#53b2ea',
+                    "#ee4c9c"] + ['C%d' % (i % 10) for i in range(100)])
+      
       if figure and axis:
         fig, ax = figure, axis
       else:
@@ -148,11 +150,12 @@ class ParallelBars:
         fig.set_size_inches(get('figWidth') / dpi, get('figHeight') / dpi)
         fig.set_dpi(dpi)
       
-      rects = []
+      rects = [None] * (lenComp * lenSol)
+      
       oldy = np.array([[0.0, ] * len(envList), ] * lenSol)
-      for i in range(lenComp, 0, -1):
-        yRange = get('yRange' if i == 1 else 'yRange%d' % i, None)
-        y = plotData['y' if i == 1 else 'y%d' % i]
+      for comIdx in range(lenComp):
+        yRange = get('yRange' if comIdx == 0 else 'y%dRange' % (comIdx + 1), get('yRange%d' % (comIdx + 1), None))
+        y = plotData['y' if comIdx == 0 else 'y%d' % (comIdx + 1)]
         
         if nonEmptyIterable(yRange):
           yError = np.zeros((lenSol, 2, len(y[0])))
@@ -161,7 +164,7 @@ class ParallelBars:
               yError[r][0][c] = y[r][c] - yRange[r][c][0]  # lower
               yError[r][1][c] = yRange[r][c][1] - y[r][c]  # upper
         else:
-          yerror = get('yError' if i == 1 else 'yError%d' % i, None)
+          yerror = get('yError' if comIdx == 0 else 'yError%d' % (comIdx + 1), None)
           
           if yerror:
             yError = np.zeros((lenSol, 2, len(y[0])))
@@ -171,17 +174,21 @@ class ParallelBars:
                 yError[r][1][c] = yerror[r][c][0]  # upper
           else:
             yError = None
-
+        
         highContrast = get("highContrast", False)
         
-        for sol in range(lenSol):
-          rects.append(
-            ax.bar(envIndex - groupWidth / 2 + width * (sol + 0.5) + marginInner, y[sol], width - marginInner,
-                   bottom=oldy[sol],
-                   color='none' if highContrast else colors[((i - 1) * lenSol + sol)%len(colors)],
-                   edgecolor=colors[(i - 1) * lenSol + sol] if highContrast else "black",
-                   hatch=['/', '\\', '-', '+', 'x', '.', 'o', 'O', '*', '//', '\\\\'][(i - 1) * lenSol + sol] if highContrast else None,
-                   ecolor='r', yerr=yError[sol] if yError is not None else None))
+        for solIdx in range(lenSol):
+          normalIdx = (lenComp - 1 - comIdx) * lenSol + solIdx
+          transpos = normalIdx // lenSol + normalIdx % lenSol * lenComp
+          rects[transpos] = ax.bar(
+            envIndex - groupWidth / 2 + width * (solIdx + 0.5) + 2 * marginInner, y[solIdx],
+            width - marginInner,
+            bottom=oldy[solIdx],
+            color='none' if highContrast else colors[comIdx * lenSol + solIdx],
+            edgecolor=colors[comIdx * lenSol + solIdx] if highContrast else "black",
+            hatch=['/', '\\', '-', '+', 'x', '.', 'o', 'O', '*', '//', '\\\\'][
+              comIdx * lenSol + solIdx] if highContrast else None,
+            ecolor='r', yerr=yError[solIdx] if yError is not None else None)
         oldy += y
       
       ax.set_xticks(envIndex)
@@ -189,34 +196,44 @@ class ParallelBars:
       
       ax.set_xlim([0 - groupWidth / 2 - paddingLeft, len(envList) - 1 + groupWidth / 2 + paddingRight])
       if len(components):
-        legendTitles = list((com + ' - ' + sol for sol, com in itertools.product(solList, components, )))
+        if lenSol == 1:
+          legendTitles = components
+        else:
+          legendTitles = [None] * (lenComp * lenSol) #list((com + ' - ' + sol for sol, com in itertools.product(solList, components, )))
+          for comIdx in range(lenComp):
+            for solIdx in range(lenSol):
+              normalIdx = (lenComp - 1 - comIdx) * lenSol + solIdx
+              transpos = normalIdx // lenSol + normalIdx % lenSol * lenComp
+              legendTitles[transpos] = components[comIdx] + ' - ' + solList[solIdx]
+              
+              # print(components[comIdx] + ' - ' + solList[solIdx], (lenComp - 1 - comIdx, solIdx), normalIdx, transpos)
       else:
         legendTitles = solList
-      
       
       if get("showLegend", True):
         font = FontProperties('serif', weight='light', size=get('legendFontSize', 20))
         
         if get("legendLoc", None) is None and get("legendOutside", True):
-          ax.legend((rects[i // lenComp + lenSol * (lenComp - 1 - i % lenComp)][0] for i in range(len(rects))),
-                    legendTitles, prop=font, bbox_to_anchor=(0, 1.02, 1, 0.2 * lenComp), loc="lower left",
-                    mode="expand", borderaxespad=0, ncol=lenSol)
+          ax.legend(rects, legendTitles, prop=font, bbox_to_anchor=(0, 1.02, 1, 0.2 * lenComp),
+                    loc="lower left", mode="expand", borderaxespad=0, ncol=lenSol)
         else:
-          ax.legend((rects[i // lenComp + lenSol * (lenComp - 1 - i % lenComp)][0] for i in range(len(rects))),
-                             legendTitles, frameon=False, loc=get('legendLoc', 'best'), prop=font,
-                             ncol=get('legendColumn', 1), handlelength=1)
+          ax.legend(rects, legendTitles, frameon=False, loc=get('legendLoc', 'best'), prop=font,
+                    ncol=get('legendColumn', 1), handlelength=1)
       
       font = FontProperties('serif', weight='light', size=get('xFontSize', 20))
       ax.set_xlabel(get('xTitle', ""), fontproperties=font)
       
-      ticks = get('xTicks&Labels', None)
+      ticks = get('yTicks&Labels', None)
       if ticks:
-        ax.tick_params(which='minor', length=0)
+        ax.ticklabel_format(style='plain', axis='y')
         if len(ticks) == 2 and nonEmptyIterable(ticks[0]) and nonEmptyIterable(ticks[1]):
-          ax.set_xticks(ticks[0])
-          ax.set_xticklabels(ticks[1])
+          ax.set_yticks(ticks[0])
+          ax.set_yticklabels(ticks[1])
         else:
-          ax.set_xticks(ticks)
+          ax.set_yticks(ticks)
+        
+        ax.get_yaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
+        ax.get_yaxis().set_minor_formatter(matplotlib.ticker.NullFormatter())
       
       font = FontProperties('serif', weight='light', size=get('xFontSize', 20) - 4)
       for tick in ax.xaxis.get_major_ticks():
