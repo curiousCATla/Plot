@@ -50,9 +50,9 @@ data = {
          [1691.1433728000002, 3382.2867456000004, 6764.573491200001]]
       ],
       
-      "annotationPos": [('bottom', -0.1, 200),  ('right', -0.15, -300), ('right', -0.15, -300),
-                        ('bottom', -0.05, 900), ('right', -0.15, 0),    ('right', -0.15, 0),
-                        ('bottom', 0.1, 1700), ('right', -0.15, 300),  ('right', -0.15, 300),    ]
+      "annotationPos": [('bottom', -0.1, 200), ('right', -0.15, -300), ('right', -0.15, -300),
+                        ('bottom', -0.05, 900), ('right', -0.15, 0), ('right', -0.15, 0),
+                        ('bottom', 0.1, 1700), ('right', -0.15, 300), ('right', -0.15, 300), ]
     },
   ]
 }
@@ -122,37 +122,14 @@ class AnnotatedBars:
         fig.set_size_inches(get('figWidth') / dpi, get('figHeight') / dpi)
         fig.set_dpi(dpi)
       
-      rects = [None] * lenSol
+      rects = []
+      for i in range(lenSol): rects.append([])
       
       oldy = np.array([[0.0, ] * len(envList), ] * lenSol)
-      tooSmall = []
-
-      if get('xLog', False):
-        ax.set_xscale('log')
-
-      if get('yLog', False):
-        ax.set_yscale('log')
-
-      if get('yGrid', False):
-        ax.yaxis.grid(True)
-
-      lim = get('yLimit', [])
-      if len(lim) > 0:
-        realLimit = lim.copy()
-  
-        for comIdx in range(2):
-          if callable(lim[comIdx]):
-            realLimit[comIdx] = lim[comIdx](ax.get_ylim()[comIdx])
-  
-        ax.set_ylim(realLimit)
-
-      lim = get('xLimit', [])
-      if len(lim) > 0:
-        ax.set_xlim(lim)
-
+      
       for solIdx in range(lenSol):
         for comIdx in range(lenComp[solIdx]):
-          rect = ax.bar(envIndex - groupWidth / 2 + width * (solIdx + 0.5) + marginInner,
+          rectSet = ax.bar(envIndex - groupWidth / 2 + width * (solIdx + 0.5) + marginInner,
                         y[solIdx][comIdx],
                         width - marginInner,
                         bottom=oldy[solIdx],
@@ -161,15 +138,47 @@ class AnnotatedBars:
                         hatch=['/', '\\', '-', '+', 'x', '.', 'o', 'O', '*', '//', '\\\\'][
                           (comIdx - 1) * lenSol + solIdx] if highContrast else None,
                         ecolor='r')
-          rects[solIdx] = rect
+          rects[solIdx].append(rectSet)
           
-          for r in rect:
+          oldy[solIdx] += y[solIdx][comIdx]
+      
+      if get('xLog', False):
+        ax.set_xscale('log')
+      
+      if get('yLog', False):
+        ax.set_yscale('log')
+      
+      if get('yGrid', False):
+        ax.yaxis.grid(True)
+      
+      lim = get('yLimit', [])
+      if len(lim) > 0:
+        realLimit = lim.copy()
+        
+        for comIdx in range(2):
+          if callable(lim[comIdx]):
+            realLimit[comIdx] = lim[comIdx](ax.get_ylim()[comIdx])
+        
+        ax.set_ylim(realLimit)
+      
+      lim = get('xLimit', [])
+      if len(lim) > 0:
+        ax.set_xlim(lim)
+
+      plt.gcf().canvas.draw()
+      
+      tooSmall = []
+      figHeight = ax.get_ylim()[1] - ax.get_ylim()[0]
+      
+      for solIdx in range(lenSol):
+        for comIdx in range(lenComp[solIdx]):
+          
+          for r in rects[solIdx][comIdx]:
             string = solList[solIdx][1][comIdx]
             text = ax.text(r.get_x() + r.get_width() / 2., r.get_y() + r.get_height() / 2., string,
                            rotation=90, ha='center', va='center',
                            fontsize=get('componentFontSize', 8))
             
-            plt.gcf().canvas.draw()
             bb = text.get_window_extent().transformed(ax.transData.inverted())
             
             if bb.height > r.get_height() * 0.9:
@@ -177,23 +186,20 @@ class AnnotatedBars:
               del text
               tooSmall.append([len(tooSmall), r.get_x() + r.get_width() / 2.,
                                r.get_y() + r.get_height() / 2., string])
-          
-          oldy[solIdx] += y[solIdx][comIdx]
       
-      toAnnotate = []
       annotationPos = get("annotationPos", [])
       for (i, x, y, string) in tooSmall:
         if len(annotationPos) > i:
-          toAnnotate.append(
-            [x, y, string, annotationPos[i][0], x + annotationPos[i][1], y + annotationPos[i][2]])
-      
-      for (x, y, string, loc, lx, ly) in toAnnotate:
-        l = mlines.Line2D([x, lx], [y, ly], linewidth=1, linestyle='--', color='black')
-        ax.add_line(l)
-        ha = "center" if loc == 'top' or loc == 'bottom' else loc
-        va = "center" if loc == 'left' or loc == 'right' else loc
+          loc = annotationPos[i][0]
+          lx = x + annotationPos[i][1]
+          ly = y + annotationPos[i][2] * figHeight
+          
+          l = mlines.Line2D([x, lx], [y, ly], linewidth=1, linestyle='--', color='black')
+          ax.add_line(l)
+          ha = "center" if loc == 'top' or loc == 'bottom' else loc
+          va = "center" if loc == 'left' or loc == 'right' else loc
         
-        ax.text(lx, ly, string, ha=ha, va=va, fontsize=get('componentFontSize', 8))
+          ax.text(lx, ly, string, ha=ha, va=va, fontsize=get('componentFontSize', 8))
       
       ax.set_xticks(envIndex)
       ax.set_xticklabels(envList)
@@ -203,7 +209,7 @@ class AnnotatedBars:
       
       if get("showLegend", True):
         font = FontProperties('serif', weight='light', size=get('legendFontSize', 20))
-        ax.legend(rects, solList.toList().map(lambda it: it[0]),
+        ax.legend(rects.toList().map(lambda it: it[0]), solList.toList().map(lambda it: it[0]),
                   frameon=get('legendBoxed', False), loc=get('legendLoc', 'best'), prop=font,
                   ncol=get('legendColumn', lenSol), handlelength=1)
       
