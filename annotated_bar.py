@@ -113,6 +113,8 @@ class AnnotatedBars:
 
       highContrast = get("highContrast", False)
       
+      componentFontSize = get('componentFontSize', 8)
+
       if figure and axis:
         fig, ax = figure, axis
       else:
@@ -176,14 +178,25 @@ class AnnotatedBars:
             string = solList[solIdx][1][comIdx]
             text = ax.text(r.get_x() + r.get_width() / 2., r.get_y() + r.get_height() / 2., string,
                            rotation=90, ha='center', va='center',
-                           fontsize=get('componentFontSize', 8))
+                           fontsize=componentFontSize)
             
             bb = text.get_window_extent().transformed(ax.transData.inverted())
             
-            if bb.height > r.get_height() * 0.9:
+            if bb.height > r.get_height() * 0.95:
               text.remove()
               del text
-              tooSmall.append([len(tooSmall), r.get_x() + r.get_width() / 2.,
+
+              text = ax.text(r.get_x() + r.get_width() / 2., r.get_y() + r.get_height() / 2., string,
+                            rotation=90, ha='center', va='center',
+                            fontsize=componentFontSize - 2)
+              
+              bb = text.get_window_extent().transformed(ax.transData.inverted())
+              
+              if bb.height > r.get_height() * 0.95:
+                text.remove()
+                del text
+
+                tooSmall.append([len(tooSmall), r.get_x() + r.get_width() / 2.,
                                r.get_y() + r.get_height() / 2., string])
       
       annotationPos = get("annotationPos", [])

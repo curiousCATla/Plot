@@ -89,7 +89,7 @@ if not os.path.exists('dist'):
 def nonEmptyIterable(obj):
   """return true if *obj* is iterable"""
   try:
-    var = obj[1]
+    var = obj[0]
     return True
   except:
     return False
@@ -261,7 +261,7 @@ class MultipleLines:
         fig.savefig('dist/' + name + '.png', format='png', dpi=dpi)
 
       plt.show(block=False)
-
+      
       axes.append(ax)
 
     return axes

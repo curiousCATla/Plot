@@ -33,7 +33,7 @@ class MyHandler(FileSystemEventHandler):
 
   def work(self, path):
     try:
-      f = open(path, 'r')
+      f = open(path, 'r', encoding="utf-8")
       data = f.read()
       try:
         data = rapidjson.loads(data)
