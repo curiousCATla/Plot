@@ -3,6 +3,7 @@ import os
 import sys
 import time
 from datetime import datetime
+import traceback
 
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
@@ -34,20 +35,21 @@ class MyHandler(FileSystemEventHandler):
   def work(self, path):
     try:
       f = open(path, 'r', encoding="utf-8")
-      data = f.read()
+      data_ = f.read()
+      f.close()
       try:
-        data = rapidjson.loads(data)
+        data = rapidjson.loads(data_)
       except:
         try:
-          data = ast.literal_eval(data)
-        except:
-          raise Exception("Please input a valid json or python object string")
+          data = ast.literal_eval(data_)
+        except Exception as e:
+          raise Exception("Please input a valid json or python object string\n%s"%e)
 
-      try:
-        if ordered(self.lastJson) == ordered(data):
-          return
-      except:
-        pass
+      # try:
+      #   if ordered(self.lastJson) == ordered(data):
+      #     return
+      # except:
+      #   pass
 
       self.lastJson = data
 
@@ -55,13 +57,14 @@ class MyHandler(FileSystemEventHandler):
         os.makedirs('back')
 
       fout = open('back/%s.json' % datetime.now().strftime('%Y-%B-%d-%H-%M-%S'), 'w')
-      fout.write(rapidjson.dumps(data, indent=4, sort_keys=True))
+      fout.write(data_)
       fout.close()
 
       callback_queue.put(data)
 
     except Exception as e:
       print(e, file=sys.stderr)
+      traceback.print_exc()
     finally:
       try:
         f.close()

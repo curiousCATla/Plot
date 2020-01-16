@@ -1,7 +1,7 @@
 # coding=utf-8
 import ast
 import json
-import os
+import os, math
 import matplotlib
 from matplotlib.font_manager import FontProperties
 import matplotlib.pyplot as plt
@@ -155,13 +155,13 @@ class MultipleLines:
                     markerfacecolor='none', color=colors[i % len(colors)],
                     capsize=get("errorCapSize", 5),
                     elinewidth=1,
-                    linestyle=linestyles[i], linewidth=get('lineWidth', 2),
+                    linestyle=linestyles[i], linewidth=get('lineWidth', 2), 
                     label=solList[i], ecolor='r', yerr=yerror[i] if nonEmptyIterable(yRange) else None)
 
       handles, labels = ax.get_legend_handles_labels()
 
       lastAndInd = list(zip(
-        (list(np.array(list(reversed(y[i]))) / np.array(list(reversed(x[i] if nonEmptyIterable(x[0]) else x))))
+        (list(np.array(list(map(lambda x: float("-inf") if math.isnan(x) else x, reversed(y[i])))) / np.array(list(reversed(x[i] if nonEmptyIterable(x[0]) else x))))
          for i in range(len(solList))),
         range(len(solList))))
       lastAndInd.sort(reverse=True)
@@ -176,10 +176,10 @@ class MultipleLines:
         font = FontProperties('serif', weight='light', size=get('legendFontSize', 20))
         if get("legendOutside", False):
           legend = ax.legend(handles, labels, prop=font,
-                             ncol=1, bbox_to_anchor=(1.02, 0.5), loc="center left", handlelength=0.8)
+                             ncol=1, bbox_to_anchor=(1.02, 0.5), loc="center left", handlelength=1.2)
         else:
           legend = ax.legend(handles, labels, frameon=get('legendBoxed', False), loc=get('legendLoc', 'best'), prop=font,
-                             ncol=get('legendColumn', 1))
+                             ncol=get('legendColumn', 1), handlelength=1.2)
 
       font = FontProperties('serif', weight='light', size=get('xFontSize', 20))
       ax.set_xlabel(get('xTitle', ""), fontproperties=font)
@@ -261,7 +261,7 @@ class MultipleLines:
         fig.savefig('dist/' + name + '.png', format='png', dpi=dpi)
 
       plt.show(block=False)
-      
+      plt.close('all')
       axes.append(ax)
 
     return axes
