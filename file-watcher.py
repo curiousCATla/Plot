@@ -2,7 +2,6 @@ import rapidjson, ast
 import os
 import sys
 import time
-from datetime import datetime
 import traceback
 
 from watchdog.events import FileSystemEventHandler
@@ -45,20 +44,16 @@ class MyHandler(FileSystemEventHandler):
         except Exception as e:
           raise Exception("Please input a valid json or python object string\n%s"%e)
 
-      # try:
-      #   if ordered(self.lastJson) == ordered(data):
-      #     return
-      # except:
-      #   pass
+      try:
+        if ordered(self.lastJson) == ordered(data):
+          return
+      except:
+        pass
 
       self.lastJson = data
 
       if not os.path.exists('back'):
         os.makedirs('back')
-
-      fout = open('back/%s.json' % datetime.now().strftime('%Y-%B-%d-%H-%M-%S'), 'w')
-      fout.write(data_)
-      fout.close()
 
       callback_queue.put(data)
 

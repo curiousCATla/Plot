@@ -191,9 +191,6 @@ class ParallelBars:
             ecolor='r', yerr=yError[solIdx] if yError is not None else None)
         oldy += y
 
-      ax.set_xticks(envIndex)
-      ax.set_xticklabels(get('environmentList'))
-
       ax.set_xlim([0 - groupWidth / 2 - paddingLeft, len(envList) - 1 + groupWidth / 2 + paddingRight])
       if len(components):
         if lenSol == 1:
@@ -224,8 +221,12 @@ class ParallelBars:
       ax.set_xlabel(get('xTitle', ""), fontproperties=font)
 
       ticks = get('yTicks&Labels', None)
-      if ticks:
+      if get('ySci'):
+        ax.ticklabel_format(style='sci', axis='y', scilimits=get('ySci'))
+      else:
         ax.ticklabel_format(style='plain', axis='y')
+      
+      if ticks:
         if len(ticks) == 2 and nonEmptyIterable(ticks[0]) and nonEmptyIterable(ticks[1]):
           ax.set_yticks(ticks[0])
           ax.set_yticklabels(ticks[1])
@@ -235,7 +236,19 @@ class ParallelBars:
         ax.get_yaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
         ax.get_yaxis().set_minor_formatter(matplotlib.ticker.NullFormatter())
 
-      font = FontProperties('serif', weight='light', size=get('xFontSize', 20) - 4)
+      ticks = get('xTicks&Labels', None)
+      if ticks:
+        ax.tick_params(which='minor', length=0)
+        if len(ticks) == 2 and nonEmptyIterable(ticks[0]) and nonEmptyIterable(ticks[1]):
+          ax.set_xticks(ticks[0])
+          ax.set_xticklabels(ticks[1])
+        else:
+          ax.set_xticks(ticks)
+      else:
+        ax.set_xticks(envIndex)
+        ax.set_xticklabels(get('environmentList'))
+
+      font = FontProperties('sans-serif', weight='light', size=get('xFontSize', 20) - 4)
       for tick in ax.xaxis.get_major_ticks():
         tick.label.set_fontproperties(font)
         if get('xTickRotate', False):

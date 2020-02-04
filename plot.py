@@ -9,6 +9,7 @@ except:
   pass
 
 import matplotlib.pyplot as plt
+
 # plt.rc('text', usetex=True)
 matplotlib.rcParams.update({
   'font.family': 'serif',
@@ -20,38 +21,52 @@ from multiple_line import MultipleLines
 from parallel_bar import ParallelBars
 from annotated_bar import AnnotatedBars
 from cdf import Cdf
+import rapidjson
 
 forth = [114, 83]
 third = [173, 122]
 half = [238, 109]
 
+from datetime import datetime
+
 
 class Ploter:
   def plot(self, data, fig=None, ax=None):
-    if isinstance(data, str):
-      try:
-        data = json.loads(data)
-      except Exception as e1:
+    fout = open('back/%s.json' % datetime.now().strftime('%Y-%B-%d-%H-%M-%S'), 'w')
+    fout.write(data if isinstance(data, str) else rapidjson.dumps(data))
+    fout.close()
+    
+    def work(data):
+      if isinstance(data, str):
         try:
-          data = ast.literal_eval(data)
-        except Exception as e2:
-          print(e1)
-          print(e2)
-          raise Exception("Please input a valid json or python object string")
-
-    if not isinstance(data, dict):
-      raise Exception("Please input a valid json or python object string, or an object")
-
-    plt.rc('text', usetex=data.get('usetex', False))
-
-    type = data.get('type', None)
-    if type == 'bar':
-      ParallelBars().draw(data, fig, ax)
-    elif type == 'line':
-      MultipleLines().draw(data, fig, ax)
-    elif type == 'cdf':
-      Cdf().draw(data, fig, ax)
-    elif type == 'annotated_bar':
-      AnnotatedBars().draw(data, fig, ax)
+          data = rapidjson.loads(data)
+        except Exception as e1:
+          try:
+            data = ast.literal_eval(data)
+          except Exception as e2:
+            print(e1)
+            print(e2)
+            raise Exception("Please input a valid json or python object string")
+      
+      if not isinstance(data, dict):
+        raise Exception("Please input a valid json or python object string, or an object")
+      
+      plt.rc('text', usetex=data.get('usetex', False))
+      
+      type = data.get('type', None)
+      if type == 'bar':
+        ParallelBars().draw(data, fig, ax)
+      elif type == 'line':
+        MultipleLines().draw(data, fig, ax)
+      elif type == 'cdf':
+        Cdf().draw(data, fig, ax)
+      elif type == 'annotated_bar':
+        AnnotatedBars().draw(data, fig, ax)
+      else:
+        raise Exception("Please specify type in json. Supported: bar, line, cdf")
+    
+    if isinstance(data, list):
+      for d in data:
+        work(d)
     else:
-      raise Exception("Please specify type in json. Supported: bar, line, cdf")
+      work(data)

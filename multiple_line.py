@@ -155,7 +155,7 @@ class MultipleLines:
                     markerfacecolor='none', color=colors[i % len(colors)],
                     capsize=get("errorCapSize", 5),
                     elinewidth=1,
-                    linestyle=linestyles[i], linewidth=get('lineWidth', 2), 
+                    linestyle=linestyles[i], linewidth=get('lineWidth', 2),
                     label=solList[i], ecolor='r', yerr=yerror[i] if nonEmptyIterable(yRange) else None)
 
       handles, labels = ax.get_legend_handles_labels()
@@ -256,7 +256,7 @@ class MultipleLines:
       except:
         pass
 
-      if get('output', False):
+      if get('output', True):
         fig.savefig('dist/' + name + '.eps', format='eps', dpi=dpi)
         fig.savefig('dist/' + name + '.png', format='png', dpi=dpi)
 
