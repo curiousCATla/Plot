@@ -1,7 +1,7 @@
 # coding=utf-8
 import ast
 import json
-import os
+import os, math
 import matplotlib
 from matplotlib.font_manager import FontProperties
 import matplotlib.pyplot as plt
@@ -89,7 +89,7 @@ if not os.path.exists('dist'):
 def nonEmptyIterable(obj):
   """return true if *obj* is iterable"""
   try:
-    var = obj[1]
+    var = obj[0]
     return True
   except:
     return False
@@ -122,14 +122,15 @@ class MultipleLines:
 
       if not isinstance(plotData, dict): continue
 
-      solList = get('solutionList')
+      solList = get('solutionList', ('',))
 
       fig, ax = plt.subplots()
       fig.set_size_inches(get('figWidth') / dpi, get('figHeight') / dpi)
       fig.set_dpi(dpi)
 
       yRange = get('yRange', None)
-      y = plotData['y']
+      y = get('y', None)
+      if y is None: y = list(list((r[1] + r[0]) / 2 for r in a) for a in yRange)
 
       if nonEmptyIterable(yRange):
         yerror = np.zeros((len(solList), 2, len(y[0])))
@@ -138,25 +139,29 @@ class MultipleLines:
             yerror[r][0][c] = y[r][c] - yRange[r][c][0]  # lower
             yerror[r][1][c] = yRange[r][c][1] - y[r][c]  # upper
 
-      colors = get('mainColors', ['C%d' % (i % 10) for i in range(len(solList))])
+      colors = get('mainColors', ['#0072bc', '#d95218', '#edb021', '#7a8cbf', '#009d70', '#979797', '#53b2ea', "#ee4c9c"] + ['C%d' % (i % 10) for i in range(100)])
+
       markers = get('markers',
-                    ["+", "x", "X", "o", "v", "^", "<", ">", "1", "2", "3", "4", "8", "s", "p", "P", "*", "h",
+                    ["o", "x", "v", "s", "1", "2", "3", "4", "p", "^", "*", "<", ">", "+", "X", "8", "P", "h",
                      "H", "D", "d", "|", "_", ])
       styles = ['solid', 'dashed', 'dashdot', 'dotted']
       linestyles = get('linestyles', [styles[i % len(styles)] for i in range(len(solList))])
       x = get('x')
-      y = get('y')
       for i in range(len(solList)):
-        ax.errorbar(x[i] if nonEmptyIterable(x[0]) else x, y[i], color=colors[i], capsize=get("errorCapSize", 5), elinewidth=1,
-                    marker=markers[i] if yRange is None else None,
-                    markersize=get('markerSize', 8) if yRange is None else None,
+        ax.errorbar(x[i] if nonEmptyIterable(x[0]) else x,
+                    y[i],
+                    marker=markers[i],
+                    markersize=get('markerSize', 8),
+                    markerfacecolor='none', color=colors[i % len(colors)],
+                    capsize=get("errorCapSize", 5),
+                    elinewidth=1,
                     linestyle=linestyles[i], linewidth=get('lineWidth', 2),
                     label=solList[i], ecolor='r', yerr=yerror[i] if nonEmptyIterable(yRange) else None)
 
       handles, labels = ax.get_legend_handles_labels()
 
       lastAndInd = list(zip(
-        (list(np.array(list(reversed(y[i]))) / np.array(list(reversed(x[i] if nonEmptyIterable(x[0]) else x))))
+        (list(np.array(list(map(lambda x: float("-inf") if math.isnan(x) else x, reversed(y[i])))) / np.array(list(reversed(x[i] if nonEmptyIterable(x[0]) else x))))
          for i in range(len(solList))),
         range(len(solList))))
       lastAndInd.sort(reverse=True)
@@ -171,10 +176,10 @@ class MultipleLines:
         font = FontProperties('serif', weight='light', size=get('legendFontSize', 20))
         if get("legendOutside", False):
           legend = ax.legend(handles, labels, prop=font,
-                             ncol=1, bbox_to_anchor=(1.02, 0.5), loc="center left", handlelength=0.8)
+                             ncol=1, bbox_to_anchor=(1.02, 0.5), loc="center left", handlelength=1.2)
         else:
-          legend = ax.legend(handles, labels, frameon=False, loc=get('legendLoc', 'best'), prop=font,
-                             ncol=get('legendColumn', 1))
+          legend = ax.legend(handles, labels, frameon=get('legendBoxed', False), loc=get('legendLoc', 'best'), prop=font,
+                             ncol=get('legendColumn', 1), handlelength=1.2)
 
       font = FontProperties('serif', weight='light', size=get('xFontSize', 20))
       ax.set_xlabel(get('xTitle', ""), fontproperties=font)
@@ -197,7 +202,8 @@ class MultipleLines:
       if ticks:
         ax.tick_params(which='minor', length=0)
         if len(ticks) == 2 and nonEmptyIterable(ticks[0]) and nonEmptyIterable(ticks[1]):
-          ax.set_xticks(ticks[0], ticks[1])
+          ax.set_xticks(ticks[0])
+          ax.set_xticklabels(ticks[1])
         else:
           ax.set_xticks(ticks)
 
@@ -206,6 +212,15 @@ class MultipleLines:
         tick.label.set_fontproperties(font)
         if get('xTickRotate', False):
           tick.label.set_rotation(45)
+
+      ticks = get('yTicks&Labels', None)
+      if ticks:
+        # ax.tick_params(which='minor', length=0)
+        if len(ticks) == 2 and nonEmptyIterable(ticks[0]) and nonEmptyIterable(ticks[1]):
+          ax.set_yticks(ticks[0])
+          ax.set_yticklabels(ticks[1])
+        else:
+          ax.set_yticks(ticks)
 
       font = FontProperties('serif', weight='light', size=get('yFontSize', 20))
       ax.set_ylabel(get('yTitle', ""), fontproperties=font)
@@ -218,7 +233,7 @@ class MultipleLines:
 
       lim = get('yLimit', [])
       if len(lim) > 0:
-        realLimit = lim.copy()
+        realLimit = list(lim).copy()
 
         for i in range(2):
           if callable(lim[i]):
@@ -228,7 +243,7 @@ class MultipleLines:
 
       lim = get('xLimit', [])
       if len(lim) > 0:
-        realLimit = lim.copy()
+        realLimit = list(lim).copy()
 
         for i in range(2):
           if callable(lim[i]):
@@ -241,12 +256,12 @@ class MultipleLines:
       except:
         pass
 
-      if get('output', False):
+      if get('output', True):
         fig.savefig('dist/' + name + '.eps', format='eps', dpi=dpi)
         fig.savefig('dist/' + name + '.png', format='png', dpi=dpi)
 
       plt.show(block=False)
-
+      plt.close('all')
       axes.append(ax)
 
     return axes

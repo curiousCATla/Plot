@@ -5,6 +5,32 @@ class LogReader:
   def __init__(self, path="./output.txt"):
     self.path = path
   
+  def getLines(self):
+    stack = [""]
+    data = []
+    
+    f = open(self.path, "r")
+    
+    for line in f.readlines():
+      line = re.sub("^[ |]+", "", line)
+      if line.startswith("->"):  # counter
+        tmp = re.split("[\[\]]", line)
+        data.append(stack[-1] + " " + tmp[1] + ": " + float(tmp[4].strip()))
+      else:
+        name = re.split("[\[\]]", line)[1]
+        
+        if line.startswith('+'):
+          stack.append(stack[-1] + " " + name)
+        elif line.startswith('-'):
+          us = line[line.rfind(" ") + 1: -3]
+          us = int(us)
+          data.append(stack[-1] + ": " + us)
+          stack.pop()
+    
+    f.close()
+    
+    return data
+  
   def getData(self):
     stack = []
     data = None
@@ -17,9 +43,13 @@ class LogReader:
         tmp = re.split("[\[\]]", line)
         counter = {
           "l1": tmp[1],
-          "l2": tmp[3],
           "count": float(tmp[4].strip())
         }
+        try:
+          counter["l2"] = tmp[3]
+        except:
+          pass
+        
         stack[-1]["counters"].append(counter)
       else:
         name = re.split("[\[\]]", line)[1]
@@ -29,7 +59,7 @@ class LogReader:
           if len(stack):
             stack[-1]["children"].append(new)
           stack.append(new)
-        if line.startswith('-'):
+        elif line.startswith('-'):
           us = line[line.rfind(" ") + 1: -3]
           us = int(us)
           stack[-1]["time"] = us
