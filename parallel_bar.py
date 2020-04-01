@@ -22,23 +22,24 @@ data = {
                  '#009d70',
                  '#979797',
                  '#53b2ea'],
-
+  
   'solutionList': ('VERID', 'AAR', 'IntegriDB'),
   'environmentList': ("Intel", "Rome"),
-
+  
   'yLog': False,
   'yGrid': False,
-
+  
   'paddingLeft': 0.2,
   'paddingRight': 0.2,
-
-  'margin': 0.4,
+  
+  'marginGroups': 0.4,
   'marginInner': 0.02,
   'xFontSize': 20,
   'xTickRotate': False,
   'yFontSize': 20,
   'legendFontSize': 8,
-
+  'output': False,
+  
   'children': [
     {
       'name': "insertion",
@@ -110,53 +111,53 @@ class ParallelBars:
         data = json.loads(data)
       except:
         data = ast.literal_eval(data)
-
+    
     axes = []
-
+    
     for plotData in data['children']:
       name = plotData['name']
-
+      
       def get(key, default=None):
         result = plotData.get(key, None)
         if result is not None: return result
-
+        
         result = data.get(key, None)
         if result is not None: return result
-
+        
         return default
-
+      
       envList = get('environmentList')
       solList = get('solutionList')
       lenSol = len(solList)
       components = get('components', ())
       lenComp = max(1, len(components))
-
+      
       envIndex = np.arange(len(envList))  # the x locations for the groups
-      groupWidth = 1 - get('margin', 0.2)
+      groupWidth = 1 - get('marginGroups', 0.2)
       paddingLeft = get('paddingLeft', 0.1)
       paddingRight = get('paddingRight', 0.1)
-      marginInner = get('marginInner', 0.02)
-      width = groupWidth / lenSol - marginInner  # the width of the bars
-
+      marginBars = get('marginBars', 0.02)
+      width = groupWidth / lenSol - marginBars  # the width of the bars
+      
       colors = get('mainColors',
                    ['#0072bc', '#d95218', '#edb021', '#7a8cbf', '#009d70', '#979797', '#53b2ea',
                     "#ee4c9c"] + ['C%d' % (i % 10) for i in range(100)])
-
+      
       if figure and axis:
         fig, ax = figure, axis
       else:
         fig, ax = plt.subplots()
-
+        
         fig.set_size_inches(get('figWidth') / dpi, get('figHeight') / dpi)
         fig.set_dpi(dpi)
-
+      
       rects = [None] * (lenComp * lenSol)
-
+      
       oldy = np.array([[0.0, ] * len(envList), ] * lenSol)
       for comIdx in range(lenComp):
         yRange = get('yRange' if comIdx == 0 else 'y%dRange' % (comIdx + 1), get('yRange%d' % (comIdx + 1), None))
         y = plotData['y' if comIdx == 0 else 'y%d' % (comIdx + 1)]
-
+        
         if nonEmptyIterable(yRange):
           yError = np.zeros((lenSol, 2, len(y[0])))
           for r in range(lenSol):
@@ -165,7 +166,7 @@ class ParallelBars:
               yError[r][1][c] = yRange[r][c][1] - y[r][c]  # upper
         else:
           yerror = get('yError' if comIdx == 0 else 'yError%d' % (comIdx + 1), None)
-
+          
           if yerror:
             yError = np.zeros((lenSol, 2, len(y[0])))
             for r in range(lenSol):
@@ -174,15 +175,15 @@ class ParallelBars:
                 yError[r][1][c] = yerror[r][c][0]  # upper
           else:
             yError = None
-
+        
         highContrast = get("highContrast", False)
-
+        
         for solIdx in range(lenSol):
           normalIdx = (lenComp - 1 - comIdx) * lenSol + solIdx
           transpos = normalIdx // lenSol + normalIdx % lenSol * lenComp
           rects[transpos] = ax.bar(
-            envIndex - groupWidth / 2 + width * (solIdx + 0.5) + 2 * marginInner, y[solIdx],
-            width - marginInner,
+            envIndex - groupWidth / 2 + (width + marginBars) * (solIdx + 0.5),
+            y[solIdx], width - marginBars,
             bottom=oldy[solIdx],
             color='none' if highContrast else colors[comIdx * lenSol + solIdx],
             edgecolor=colors[comIdx * lenSol + solIdx] if highContrast else "black",
@@ -190,36 +191,37 @@ class ParallelBars:
               comIdx * lenSol + solIdx] if highContrast else None,
             ecolor='r', yerr=yError[solIdx] if yError is not None else None)
         oldy += y
-
+      
       ax.set_xlim([0 - groupWidth / 2 - paddingLeft, len(envList) - 1 + groupWidth / 2 + paddingRight])
       if len(components):
         if lenSol == 1:
           legendTitles = components
         else:
-          legendTitles = [None] * (lenComp * lenSol) #list((com + ' - ' + sol for sol, com in itertools.product(solList, components, )))
+          legendTitles = [None] * (
+              lenComp * lenSol)  # list((com + ' - ' + sol for sol, com in itertools.product(solList, components, )))
           for comIdx in range(lenComp):
             for solIdx in range(lenSol):
               normalIdx = (lenComp - 1 - comIdx) * lenSol + solIdx
               transpos = normalIdx // lenSol + normalIdx % lenSol * lenComp
               legendTitles[transpos] = components[comIdx] + ' - ' + solList[solIdx]
-
+              
               # print(components[comIdx] + ' - ' + solList[solIdx], (lenComp - 1 - comIdx, solIdx), normalIdx, transpos)
       else:
         legendTitles = solList
-
+      
       if get("showLegend", True):
         font = FontProperties('serif', weight='light', size=get('legendFontSize', 20))
-
+        
         if get("legendLoc", None) is None and get("legendOutside", True):
           ax.legend(rects, legendTitles, prop=font, bbox_to_anchor=(0, 1.02, 1, 0.2 * lenComp),
                     loc="lower left", mode="expand", borderaxespad=0, ncol=lenSol, handlelength=1)
         else:
           ax.legend(rects, legendTitles, frameon=False, loc=get('legendLoc', 'best'), prop=font,
                     ncol=get('legendColumn', 1), handlelength=1)
-
+      
       font = FontProperties('serif', weight='light', size=get('xFontSize', 20))
       ax.set_xlabel(get('xTitle', ""), fontproperties=font)
-
+      
       ticks = get('yTicks&Labels', None)
       if get('ySci'):
         ax.ticklabel_format(style='sci', axis='y', scilimits=get('ySci'))
@@ -232,10 +234,10 @@ class ParallelBars:
           ax.set_yticklabels(ticks[1])
         else:
           ax.set_yticks(ticks)
-
+        
         ax.get_yaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
         ax.get_yaxis().set_minor_formatter(matplotlib.ticker.NullFormatter())
-
+      
       ticks = get('xTicks&Labels', None)
       if ticks:
         ax.tick_params(which='minor', length=0)
@@ -244,71 +246,72 @@ class ParallelBars:
           ax.set_xticklabels(ticks[1])
         else:
           ax.set_xticks(ticks)
+          ax.set_xticklabels([str(i) for i in ticks])
       else:
         ax.set_xticks(envIndex)
-        ax.set_xticklabels(get('environmentList'))
-
+        ax.set_xticklabels(envList)
+      
       font = FontProperties('sans-serif', weight='light', size=get('xFontSize', 20) - 4)
       for tick in ax.xaxis.get_major_ticks():
         tick.label.set_fontproperties(font)
         if get('xTickRotate', False):
           tick.label.set_rotation(45)
-
+      
       font = FontProperties('serif', weight='light', size=get('yFontSize', 20))
       ax.set_ylabel(get('yTitle', ""), fontproperties=font)
-
+      
       font = FontProperties('sans-serif', weight='light', size=get('yFontSize', 20) - 4)
       for tick in ax.yaxis.get_major_ticks():
         tick.label.set_fontproperties(font)
-
+      
       if get('xLog', False):
         ax.set_xscale('log')
-
+      
       if get('yLog', False):
         ax.set_yscale('log')
-
+      
       if get('yGrid', False):
         ax.yaxis.grid(True)
-
+      
       lim = get('yLimit', [])
       if len(lim) > 0:
         realLimit = lim.copy()
-
+        
         for i in range(2):
           if callable(lim[i]):
             realLimit[i] = lim[i](ax.get_ylim()[i])
-
+        
         ax.set_ylim(realLimit)
-
+      
       lim = get('xLimit', [])
       if len(lim) > 0:
         ax.set_xlim(lim)
-
+      
       subAxes = []
       for subfigure in get('subfigures', []):
         from .plot import Ploter
         subAxes.append(Ploter().plot(subfigure, fig, ax))
-
+      
       # TODO add subfigures
-
+      
       try:
         fig.tight_layout()
       except:
         pass
-
+      
       if get('output', False):
         fig.savefig('dist/' + name + '.eps', format='eps', dpi=dpi, bbox_inches="tight")
         fig.savefig('dist/' + name + '.png', format='png', dpi=dpi, bbox_inches="tight")
-
+      
       plt.show(block=False)
-      plt.close('all')
+      # plt.close('all')
       axes.append(ax)
-
+    
     return axes
 
 
 if __name__ == '__main__':
   ParallelBars().draw(data)
-
+  
   while True:
     plt.pause(0.5)

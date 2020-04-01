@@ -30,6 +30,14 @@ half = [238, 109]
 
 from datetime import datetime
 
+def nonEmptyIterable(obj):
+  """return true if *obj* is iterable"""
+  try:
+    var = obj[0]
+    return True
+  except:
+    return False
+
 
 class Ploter:
   def plot(self, data, fig=None, ax=None):
@@ -68,7 +76,7 @@ class Ploter:
       else:
         raise Exception("Please specify type in json. Supported: bar, line, cdf")
     
-    if isinstance(data, list):
+    if nonEmptyIterable(data):
       for d in data:
         work(d)
     else:
