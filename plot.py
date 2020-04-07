@@ -31,6 +31,7 @@ half = [238, 109]
 
 from datetime import datetime
 
+
 def nonEmptyIterable(obj):
   """return true if *obj* is iterable"""
   try:
@@ -38,6 +39,84 @@ def nonEmptyIterable(obj):
     return True
   except:
     return False
+
+
+data = {
+  # all properties are hierarchical
+  'type': "bar",
+  'figWidth': 600,
+  'figHeight': 350,
+  'mainColors': ['#0072bc',
+                 '#d95218',
+                 '#edb021',
+                 '#7a8cbf',
+                 '#009d70',
+                 '#979797',
+                 '#53b2ea'],
+  
+  'xLog': False,
+  'xGrid': False,
+  'xFontSize': 20,
+  'xTickRotate': False,
+  
+  'yLog': False,
+  'yGrid': False,
+  'yFontSize': 20,
+  
+  'legendLoc': 'best',
+  'legendColumn': 1,
+  
+  'markerSize': 8,
+  'lineWidth': 2,
+  
+  "componentFontSize": 6,   # only for annotated bar
+  
+  'legendFontSize': 12,
+  'output': False,
+  
+  "parent": None,  # 每个节点都有一个parent, 只是根节点能确定parent是None, 其余的不能现在赋值
+  
+  # separate figures.
+  # 如果没有这一项, 就把当前dict作为唯一的一个figure
+  "figures": [
+    {
+      'name': 'test_figure_1',
+      
+      'column': 2,  # 一行有几个
+      'xPadding': 5,
+      'yPadding': 5,
+  
+      # subfigures 一张图, 分几块画. 按个数分配长宽. 也可以自定义长宽
+      # 如果没有这一项, 就把当前dict作为唯一的一个subfigure
+      "subfigures": [
+        {
+          'type': "bar",
+          'solutionList': ('VERID', 'AAR', 'IntegriDB'),
+          'xLog': True,
+          
+          'groupWidth': 0.7,  # 由最近的两个数据点的x坐标算出group最大可占的宽度. group的最终宽度是 group的最大宽度*groupWidth. 对数坐标自动支持.
+          'barWidth': 0.8,  # 由group的最终宽度知每个bar的最大宽度. 然后每个bar的最终宽度是 bar的最大宽度*barWidth
+          
+          # 这一个subfigure可以有好几层, 比如一层bar一层line
+          # 如果没有这一项, 就把当前dict作为唯一的一个layer
+          'layers': [
+            {
+              'xTicks&Labels': [[1024, 2048, 4096], ("1K", "2K", "4K")],
+              
+            }
+          ]
+        },
+        {
+          'type': "line",
+          
+        }
+      ]
+    },
+    {
+    
+    }
+  ]
+}
 
 
 class Ploter:

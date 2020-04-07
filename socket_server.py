@@ -2,6 +2,8 @@ import ast
 import json
 import socketserver
 
+from plot import Ploter
+
 
 class MyTCPHandler(socketserver.StreamRequestHandler):
   mem = ""
@@ -24,9 +26,7 @@ class MyTCPHandler(socketserver.StreamRequestHandler):
       if data:
         mem = self.mem
         self.mem = ""
-        f = open("last-plot-data.json", "w")
-        f.write(mem)
-        f.close()
+        Ploter().plot(data)
     except:
       pass
 

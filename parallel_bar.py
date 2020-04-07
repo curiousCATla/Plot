@@ -29,11 +29,11 @@ data = {
   'yLog': False,
   'yGrid': False,
   
-  'paddingLeft': 0.2,
-  'paddingRight': 0.2,
+  'groupWidth': 0.7,  # 由最近的两个数据点的x坐标算出group最大可占的宽度. group的最终宽度是 group的最大宽度*groupWidth. 对数坐标自动支持.
+  'barWidth': 0.8,  # 由group的最终宽度知每个bar的最大宽度. 然后每个bar的最终宽度是 bar的最大宽度*barWidth
   
-  'marginGroups': 0.4,
-  'marginInner': 0.02,
+  'xTicks&Labels': [[1, 2], ("Intel", "Rome")],
+  
   'xFontSize': 20,
   'xTickRotate': False,
   'yFontSize': 20,
@@ -45,8 +45,10 @@ data = {
       'name': "insertion",
       'xTitle': '',
       'yTitle': 'Insertion time (ms)',
+      'xTicks&Labels': [[0, 1], ("Intel", "Rome")],
       'components': ("Acyclic add", "Cyclic add"),
       'yLimit': [0, 1.4],
+      'x': [0, 1],  # 有默认值, 就是xTicks&Labels[0]
       'y': (
         (0.011, 0.203),  # 同一个solution, 不同的environment
         (0.428, 0.220),  # 另一个solution
@@ -117,7 +119,7 @@ class ParallelBars:
     for plotData in data['children']:
       name = plotData['name']
       print("---->" + name + "<----\n")
-
+      
       def get(key, default=None):
         result = plotData.get(key, None)
         if result is not None: return result
@@ -183,10 +185,12 @@ class ParallelBars:
           transpos = normalIdx // lenSol + normalIdx % lenSol * lenComp
           rects[transpos] = ax.bar(
             envIndex - groupWidth / 2 + (width + marginBars) * (solIdx + 0.5),
-            y[solIdx], width - marginBars,
+            y[solIdx],
+            width=width - marginBars,
             bottom=oldy[solIdx],
             color='none' if highContrast else colors[comIdx * lenSol + solIdx],
             edgecolor=colors[comIdx * lenSol + solIdx] if highContrast else "black",
+            align='edge',
             hatch=['/', '\\', '-', '+', 'x', '.', 'o', 'O', '*', '//', '\\\\'][
               comIdx * lenSol + solIdx] if highContrast else None,
             ecolor='r', yerr=yError[solIdx] if yError is not None else None)
@@ -198,7 +202,7 @@ class ParallelBars:
           legendTitles = components
         else:
           legendTitles = [None] * (
-              lenComp * lenSol)  # list((com + ' - ' + sol for sol, com in itertools.product(solList, components, )))
+            lenComp * lenSol)  # list((com + ' - ' + sol for sol, com in itertools.product(solList, components, )))
           for comIdx in range(lenComp):
             for solIdx in range(lenSol):
               normalIdx = (lenComp - 1 - comIdx) * lenSol + solIdx
