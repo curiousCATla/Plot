@@ -23,6 +23,7 @@ from annotated_bar import AnnotatedBars
 from violin import Violin
 from cdf import Cdf
 import rapidjson
+import copy
 
 forth = [114, 83]
 third = [173, 122]

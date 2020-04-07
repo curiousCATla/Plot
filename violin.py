@@ -39,7 +39,6 @@ data = {
   'xFontSize': 20,
   'yFontSize': 20,
   
-  'sameColor': False,
   'output': False,
   
   'children': [
@@ -111,6 +110,7 @@ class Violin:
     
     for plotData in data['children']:
       name = plotData['name']
+      print("---->" + name + "<----\n")
       
       def get(key, default=None):
         result = plotData.get(key, None)
@@ -143,8 +143,7 @@ class Violin:
         fig, ax = figure, axis
       else:
         fig, ax = plt.subplots()
-        
-        fig.set_size_inches(get('figWidth') / dpi, get('figHeight') / dpi)
+        fig.set_size_inches(get('figWidth', 600) / dpi, get('figHeight', 350) / dpi)
         fig.set_dpi(dpi)
       
       fake_handles = []
@@ -176,10 +175,10 @@ class Violin:
         ax.vlines(positions, quartile1, quartile3, color='k', linestyle='-', lw=5)
         ax.vlines(positions, whiskersMin, whiskersMax, color='k', linestyle='-', lw=1)
       
-      if get("showLegend", True):
+      if get("showLegend", lenSol > 1):
         font = FontProperties('serif', weight='light', size=get('legendFontSize', 20))
         
-        if get("legendLoc", None) is None and get("legendOutside", True):
+        if get("legendLoc", None) is None and get("legendOutside", False):
           ax.legend(fake_handles, solList, prop=font, bbox_to_anchor=(0, 1.02, 1, 0.2 * lenComp),
                     loc="lower left", mode="expand", borderaxespad=0, ncol=lenSol, handlelength=1)
         else:

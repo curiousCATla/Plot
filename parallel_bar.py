@@ -116,7 +116,8 @@ class ParallelBars:
     
     for plotData in data['children']:
       name = plotData['name']
-      
+      print("---->" + name + "<----\n")
+
       def get(key, default=None):
         result = plotData.get(key, None)
         if result is not None: return result
@@ -147,8 +148,7 @@ class ParallelBars:
         fig, ax = figure, axis
       else:
         fig, ax = plt.subplots()
-        
-        fig.set_size_inches(get('figWidth') / dpi, get('figHeight') / dpi)
+        fig.set_size_inches(get('figWidth', 600) / dpi, get('figHeight', 350) / dpi)
         fig.set_dpi(dpi)
       
       rects = [None] * (lenComp * lenSol)
