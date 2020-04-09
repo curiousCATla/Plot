@@ -1,8 +1,9 @@
-/.idea
-/Fig
+.idea
 /dist
-/venv
-/__pycache__
+venv
+__pycache__
 
 /back
-/.vscod
+.vscode
+
+last-plot-data.json

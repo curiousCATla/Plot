@@ -160,7 +160,7 @@ class Violin:
         
         for i, pc in enumerate(parts['bodies']):
           pc.set_facecolor(color)
-          pc.set_edgecolor(color)
+          pc.set_edgecolor('black')
           pc.set_alpha(1)
         
         quartile1, medians, quartile3 = np.percentile(solSamples, [25, 50, 75], axis=1)
