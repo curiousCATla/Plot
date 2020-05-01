@@ -220,12 +220,12 @@ class AnnotatedBars:
                    len(envList) - 1 + groupWidth / 2 + paddingRight])
       
       if get("showLegend", True):
-        font = FontProperties('serif', weight='light', size=get('legendFontSize', 20))
+        font = FontProperties(weight='regular', size=get('legendFontSize', 20))
         ax.legend(rects.toList().map(lambda it: it[0]), solList.toList().map(lambda it: it[0]),
                   frameon=get('legendBoxed', False), loc=get('legendLoc', 'best'), prop=font,
                   ncol=get('legendColumn', lenSol), handlelength=1)
       
-      font = FontProperties('serif', weight='light', size=get('xFontSize', 20))
+      font = FontProperties(weight='regular', size=get('xFontSize', 20))
       ax.set_xlabel(get('xTitle', ""), fontproperties=font)
 
       ticks = get('yTicks&Labels', None)
@@ -240,16 +240,16 @@ class AnnotatedBars:
         ax.get_yaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
         ax.get_yaxis().set_minor_formatter(matplotlib.ticker.NullFormatter())
 
-      font = FontProperties('serif', weight='light', size=get('xFontSize', 20) - 4)
+      font = FontProperties(weight='regular', size=get('xFontSize', 20) - 4)
       for tick in ax.xaxis.get_major_ticks():
         tick.label.set_fontproperties(font)
         if get('xTickRotate', False):
           tick.label.set_rotation(45)
       
-      font = FontProperties('serif', weight='light', size=get('yFontSize', 20))
+      font = FontProperties(weight='regular', size=get('yFontSize', 20))
       ax.set_ylabel(get('yTitle', ""), fontproperties=font)
       
-      font = FontProperties('sans-serif', weight='light', size=get('yFontSize', 20) - 4)
+      font = FontProperties('sans-serif', weight='regular', size=get('yFontSize', 20) - 4)
       for tick in ax.yaxis.get_major_ticks():
         tick.label.set_fontproperties(font)
       

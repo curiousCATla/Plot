@@ -35,66 +35,63 @@ cmaps = [('Perceptually Uniform Sequential', [
            'gnuplot', 'gnuplot2', 'CMRmap', 'cubehelix', 'brg',
            'gist_rainbow', 'rainbow', 'jet', 'nipy_spectral', 'gist_ncar'])]
 data = {
-  'type': "heatmap",
-  'figWidth': 600,
-  'figHeight': 350,
+  "type": "heatmap",
+  "figWidth": 600,
+  "figHeight": 350,
 
-  'legendLoc': 'best',
-  'legendColumn': 1,
+  "xFontSize": 20,
+  "xTickRotate": False,
+  "yFontSize": 20,
 
-  'xFontSize': 20,
-  'xTickRotate': False,
-  'yFontSize': 20,
+  "legendFontSize": 14,
+  "output": False,
 
-  'legendFontSize': 14,
-  'output': False,
+  "cmap": "Wistia",  # "YlGn"
+  "figTitle": "meshTest",
 
-  'cmap': "Wistia",  # "YlGn"
-  'figTitle': "meshTest",
-
-  'children': [
+  "children": [
     {
-      'name': 'meshTest',
+      "name": "meshTest",
 
-      'norm': 'linear',  # 'log', 'power@xx', 'diverge@xx', where xx is a number
-      'quantify': list('ABCDEFG'),  # to quantify or not, and how many levels should there be.
+      "norm": "linear",  # "log", "power@xx", "diverge@xx", where xx is a number
+      "quantify": list("ABCDEFG"),  # to quantify or not, and how many levels should there be.
       # if quantify is set, norm is ignored because boundary norm is used.
 
-      'xTicks&Labels': list("{}0".format(i) for i in range(4, 17, 4)),
-      'xTickRotate': False,
-      'xTitle': '# disks in one bkt',
+      "xTicks&Labels": list("{}0".format(i) for i in range(4, 17, 4)),
+      "xTickRotate": False,
+      "xTitle": "# disks in one bkt",
 
-      'yTicks&Labels': list(range(1, 5)),
-      'yTitle': '# added disks',
+      "yTicks&Labels": list(range(1, 5)),
+      "yTitle": "# added disks",
 
-      'zTitle': '# Relocation',
-      # 'zLimit': [0, 10],
+      "zTitle": "# Relocation",
+      # "zLimit": [0, 10],
 
-      'aThreshold': None,  # the threshold that turns the annotation on the figure to light color
-      'aFormat': "{x:.1f}",  # overrided by the
-      'aColors': ["black", "white"],
+      "aThreshold": None,  # the threshold that turns the annotation on the figure to light color
+      "aFormat": "{x:.1f}",  # overrided by the
+      "aColors": ["black", "white"],
 
-      'z': 10 - np.random.rand(4, 4) * 5
+      "z": 10 - np.random.rand(4, 4) * 5
     },
     {
-      'name': 'meshTest2',
-      'norm': 'linear',
+      "name": "meshTest2",
+      "norm": "linear",
 
-      'xTicks&Labels': list("{}0".format(i) for i in range(4, 17, 4)),
-      'xTickRotate': True,
-      'xTitle': '# disks in one bkt',
+      "xTicks&Labels": list("{}0".format(i) for i in range(4, 17, 4)),
+      "xTickRotate": True,
+      "xTitle": "# disks in one bkt",
 
-      'yTicks&Labels': list(range(1, 5)),
-      'yTitle': '# added disks',
+      "yTicks&Labels": list(range(1, 5)),
+      "yTitle": "# added disks",
 
-      'zTitle': '# Relocation',
-      'zLimit': [0, 100],
+      "zTitle": "# Relocation",
+      "zLimit": [0, 100],
 
-      'aThreshold': None,  # the threshold that turns the annotation on the figure to light color
-      'aFormat': "{x:.1f}",  # overrided by the
-      'aColors': ["black", "white"],
+      "aThreshold": None,  # the threshold that turns the annotation on the figure to light color
+      "aFormat": "{x:.1f}",  # overrided by the
+      "aColors": ["black", "white"],
 
-      'z': 50 + np.random.rand(4, 4) * 50
+      "z": 50 + np.random.rand(4, 4) * 50
     }
   ]
 }
@@ -149,6 +146,7 @@ class HeatMap:
 
       zmin, zmax = get('zLimit', (z.min(), z.max()))
 
+      normstr = get('norm', 'linear')
       # Plot the heatmap
       quantify = get('quantify')
       if quantify is not None:
@@ -161,7 +159,6 @@ class HeatMap:
       else:
         fmt = zticks = None
         cmap = get('cmap', "YlGn")
-        normstr = get('norm', 'linear')
         if normstr == 'linear':
           norm = None
         elif normstr == 'log':
@@ -182,7 +179,7 @@ class HeatMap:
       if get("showLegend", True):
         cbar = ax.figure.colorbar(im, ax=ax, format=fmt, ticks=zticks)
 
-        font = FontProperties('serif', weight='light', size=get('legendFontSize', 16))
+        font = FontProperties(weight='regular', size=get('legendFontSize', 16))
         cbar.ax.set_ylabel(get('zTitle', ""), rotation=-90, va="bottom", fontproperties=font)
 
       if True:
@@ -197,11 +194,11 @@ class HeatMap:
         else:
           ax.set_xticks(np.arange(z.shape[1]))
 
-        font = FontProperties('sans-serif', weight='light', size=get('xFontSize', 20) - 4)
+        font = FontProperties('sans-serif', weight='regular', size=get('xFontSize', 20) - 4)
         for tick in ax.xaxis.get_major_ticks():
           tick.label.set_fontproperties(font)
 
-        font = FontProperties('serif', weight='light', size=get('xFontSize', 20))
+        font = FontProperties(weight='regular', size=get('xFontSize', 20))
         ax.set_xlabel(get('xTitle', ""), fontproperties=font)
 
         if get('xTickRotate', True):
@@ -209,7 +206,7 @@ class HeatMap:
           plt.setp(ax.get_xticklabels(), rotation=30, ha="right", rotation_mode="anchor")
 
       if True:
-        font = FontProperties('serif', weight='light', size=get('yFontSize', 20))
+        font = FontProperties(weight='regular', size=get('yFontSize', 20))
         ax.set_ylabel(get('yTitle', ""), fontproperties=font)
 
         ticks = get('yTicks&Labels', None)
@@ -223,7 +220,7 @@ class HeatMap:
         else:
           ax.set_yticks(np.arange(z.shape[0]))
 
-        font = FontProperties('sans-serif', weight='light', size=get('yFontSize', 20) - 4)
+        font = FontProperties('sans-serif', weight='regular', size=get('yFontSize', 20) - 4)
         for tick in ax.yaxis.get_major_ticks():
           tick.label.set_fontproperties(font)
 
@@ -257,7 +254,7 @@ class HeatMap:
       for i in range(z.shape[0]):
         for j in range(z.shape[1]):
           kw.update(color=aColors[int(im.norm(z[i, j]) > threshold)])
-          text = im.axes.text(j, i, valfmt(z[i, j], None), **kw)
+          text = im.axes.text(j, i, valfmt(math.log10(z[i, j]) if normstr == "log" else z[i, j], None), **kw)
           texts.append(text)
 
       try:

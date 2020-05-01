@@ -210,7 +210,7 @@ class ParallelBars:
         legendTitles = solList
       
       if get("showLegend", True):
-        font = FontProperties('serif', weight='light', size=get('legendFontSize', 20))
+        font = FontProperties(weight='regular', size=get('legendFontSize', 20))
         
         if get("legendLoc", None) is None and get("legendOutside", True):
           ax.legend(rects, legendTitles, prop=font, bbox_to_anchor=(0, 1.02, 1, 0.2 * lenComp),
@@ -219,7 +219,7 @@ class ParallelBars:
           ax.legend(rects, legendTitles, frameon=False, loc=get('legendLoc', 'best'), prop=font,
                     ncol=get('legendColumn', 1), handlelength=1)
       
-      font = FontProperties('serif', weight='light', size=get('xFontSize', 20))
+      font = FontProperties(weight='regular', size=get('xFontSize', 20))
       ax.set_xlabel(get('xTitle', ""), fontproperties=font)
       
       ticks = get('yTicks&Labels', None)
@@ -251,16 +251,16 @@ class ParallelBars:
         ax.set_xticks(envIndex)
         ax.set_xticklabels(envList)
       
-      font = FontProperties('sans-serif', weight='light', size=get('xFontSize', 20) - 4)
+      font = FontProperties('sans-serif', weight='regular', size=get('xFontSize', 20) - 4)
       for tick in ax.xaxis.get_major_ticks():
         tick.label.set_fontproperties(font)
         if get('xTickRotate', False):
           tick.label.set_rotation(45)
       
-      font = FontProperties('serif', weight='light', size=get('yFontSize', 20))
+      font = FontProperties(weight='regular', size=get('yFontSize', 20))
       ax.set_ylabel(get('yTitle', ""), fontproperties=font)
       
-      font = FontProperties('sans-serif', weight='light', size=get('yFontSize', 20) - 4)
+      font = FontProperties('sans-serif', weight='regular', size=get('yFontSize', 20) - 4)
       for tick in ax.yaxis.get_major_ticks():
         tick.label.set_fontproperties(font)
       

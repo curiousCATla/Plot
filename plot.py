@@ -10,10 +10,16 @@ except:
 
 import matplotlib.pyplot as plt
 
+fontProp = FontProperties(fname="./LinLibertine_R.ttf")
+
 # plt.rc('text', usetex=True)
 matplotlib.rcParams.update({
-  'font.family': 'serif',
-  'font.serif': ['Times New Roman Bold', 'FreeSerifBold'],
+  'text.latex.preamble': "\\usepackage{libertine}\n\\usepackage[libertine]{newtxmath}\n\\usepackage{sfmath}\n\\usepackage[T1]{fontenc}",
+  'pdf.fonttype': 42,
+  'ps.fonttype': 42,
+  'font.family': fontProp.get_name(),  # fontProp.get_name(),
+  'text.usetex': True,
+  # 'font.serif': ['Times New Roman Bold', 'FreeSerifBold'],
 })
 matplotlib.font_manager._rebuild()
 
@@ -22,6 +28,7 @@ from parallel_bar import ParallelBars
 from annotated_bar import AnnotatedBars
 from violin import Violin
 from cdf import Cdf
+from heatmap import HeatMap
 import rapidjson
 import copy
 
@@ -30,6 +37,7 @@ third = [173, 122]
 half = [238, 109]
 
 from datetime import datetime
+
 
 def nonEmptyIterable(obj):
   """return true if *obj* is iterable"""
@@ -45,7 +53,7 @@ class Ploter:
     fout = open('../plot/back/%s.json' % datetime.now().strftime('%Y-%B-%d-%H-%M-%S'), 'w')
     fout.write(data if isinstance(data, str) else rapidjson.dumps(data))
     fout.close()
-    
+
     def work(data):
       if isinstance(data, str):
         try:
@@ -57,12 +65,12 @@ class Ploter:
             print(e1)
             print(e2)
             raise Exception("Please input a valid json or python object string")
-      
+
       if not isinstance(data, dict):
         raise Exception("Please input a valid json or python object string, or an object")
-      
+
       plt.rc('text', usetex=data.get('usetex', False))
-      
+
       type = data.get('type', None)
       if type == 'bar':
         ParallelBars().draw(data, fig, ax)
@@ -74,9 +82,11 @@ class Ploter:
         AnnotatedBars().draw(data, fig, ax)
       elif type == 'violin':
         Violin().draw(data, fig, ax)
+      elif type == 'heatmap':
+        HeatMap().draw(data, fig, ax)
       else:
         raise Exception("Please specify type in json. Supported: bar, line, cdf")
-    
+
     if nonEmptyIterable(data):
       for d in data:
         work(d)

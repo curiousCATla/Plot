@@ -177,7 +177,7 @@ class MultipleLines:
           handles = [handles[lastAndInd[i][1]][0] for i in range(len(solList))]
           labels = [labels[lastAndInd[i][1]] for i in range(len(solList))]
         
-        font = FontProperties('serif', weight='light', size=get('legendFontSize', 20))
+        font = FontProperties(weight='regular', size=get('legendFontSize', 20))
         if get("legendOutside", False):
           legend = ax.legend(handles, labels, prop=font,
                              ncol=1, bbox_to_anchor=(1.02, 0.5), loc="center left", handlelength=1.2)
@@ -186,7 +186,7 @@ class MultipleLines:
                              prop=font,
                              ncol=get('legendColumn', 1), handlelength=1.2)
       
-      font = FontProperties('serif', weight='light', size=get('xFontSize', 20))
+      font = FontProperties(weight='regular', size=get('xFontSize', 20))
       ax.set_xlabel(get('xTitle', ""), fontproperties=font)
       
       if get('xLog', False):
@@ -212,7 +212,7 @@ class MultipleLines:
         else:
           ax.set_xticks(ticks)
       
-      font = FontProperties('sans-serif', weight='light', size=get('xFontSize', 20) - 4)
+      font = FontProperties('sans-serif', weight='regular', size=get('xFontSize', 20) - 4)
       for tick in ax.xaxis.get_major_ticks():
         tick.label.set_fontproperties(font)
         if get('xTickRotate', False):
@@ -227,10 +227,10 @@ class MultipleLines:
         else:
           ax.set_yticks(ticks)
       
-      font = FontProperties('serif', weight='light', size=get('yFontSize', 20))
+      font = FontProperties(weight='regular', size=get('yFontSize', 20))
       ax.set_ylabel(get('yTitle', ""), fontproperties=font)
       
-      font = FontProperties('sans-serif', weight='light', size=get('yFontSize', 20) - 4)
+      font = FontProperties('sans-serif', weight='regular', size=get('yFontSize', 20) - 4)
       for tick in ax.yaxis.get_major_ticks():
         tick.label.set_fontproperties(font)
       
