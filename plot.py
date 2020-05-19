@@ -3,11 +3,6 @@ import json, ast, sys
 import matplotlib
 from matplotlib.font_manager import FontProperties
 
-try:
-  del matplotlib.font_manager.weight_dict['roman']
-except:
-  pass
-
 import matplotlib.pyplot as plt
 
 fontProp = FontProperties(fname="./LinLibertine_R.ttf")

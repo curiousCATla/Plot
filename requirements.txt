@@ -1,0 +1,5 @@
+python-rapidjson 
+matplotlib 
+watchdog 
+forbiddenfruit 
+numpy

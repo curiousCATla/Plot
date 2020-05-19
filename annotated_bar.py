@@ -266,8 +266,7 @@ class AnnotatedBars:
         pass
       
       if get('output', False):
-        fig.savefig('dist/' + name + '.eps', format='eps', dpi=dpi, bbox_inches="tight")
-        fig.savefig('dist/' + name + '.png', format='png', dpi=dpi, bbox_inches="tight")
+        fig.savefig('dist/' + name + '.pdf', format='pdf', dpi=dpi, bbox_inches="tight")
       
       plt.show(block=False)
       
