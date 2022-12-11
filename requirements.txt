@@ -3,3 +3,4 @@ matplotlib
 watchdog 
 forbiddenfruit 
 numpy
+scipy

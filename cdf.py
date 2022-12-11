@@ -8,8 +8,8 @@ from multiple_line import MultipleLines
 
 data = {
   'type': "cdf",
-  'figWidth': 1140,
-  'figHeight': 830,
+  'figWidth': 600,
+  'figHeight': 400,
 
   'xTitle': 'Load balancing measure',
 
@@ -20,12 +20,12 @@ data = {
   'xGrid': True,
   'yLog': False,
   'yGrid': True,
-
+  
   'children': [
     {
       'name': 'concury-silkroad-balance-cdf',
       'figTitle': "",
-      'yTitle': '',
+      'yTitle': 'CDF',
       'solutionList': ('Concury', 'SilkRoad'),
       'x': ([0, 0.1, 0.57, 0.63, 0.85, 0.92, 0.99, 1, 1.1, 1.1, 1.2, ],
             [0, 0.1, 0.57, 0.63, 0.85, 0.92, 0.99, 1, 1.1, 3.1, 3.2, ])
@@ -78,7 +78,7 @@ class Cdf:
         minx = min(minx, x[0])
         maxx = max(maxx, x[-1])
 
-        sum = 0
+        sum = 1
         y = [0]
         newX = [x[0]]
         for v in x[1:]:
@@ -95,8 +95,8 @@ class Cdf:
 
       plotData['x'] = X
       plotData['y'] = Y
-      plotData['xLimit'] = (minx, maxx)
-      if get('yLimit') is None: plotData['yLimit'] = (0, 1)
+      plotData['xLimit'] = get('xLimit', (minx, maxx))
+      plotData['yLimit'] = get('yLimit', (0, 1))
       plotData['markerSize'] = 0
     data['type'] = 'line'
     MultipleLines().draw(data, figure, axis)

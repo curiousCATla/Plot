@@ -1,4 +1,4 @@
-import json, ast, sys
+import json, ast, sys, os
 
 import matplotlib
 from matplotlib.font_manager import FontProperties
@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 fontProp = FontProperties(fname="./LinLibertine_R.ttf")
 
-# plt.rc('text', usetex=True)
+plt.rc('text', usetex=True)
 matplotlib.rcParams.update({
   'text.latex.preamble': "\\usepackage{libertine}\n\\usepackage[libertine]{newtxmath}\n\\usepackage{sfmath}\n\\usepackage[T1]{fontenc}",
   'pdf.fonttype': 42,
@@ -16,7 +16,7 @@ matplotlib.rcParams.update({
   'text.usetex': True,
   # 'font.serif': ['Times New Roman Bold', 'FreeSerifBold'],
 })
-matplotlib.font_manager._rebuild()
+# matplotlib.font_manager._rebuild()
 
 from multiple_line import MultipleLines
 from parallel_bar import ParallelBars
@@ -27,6 +27,12 @@ from heatmap import HeatMap
 import rapidjson
 import copy
 
+if not os.path.exists('dist'):
+  os.makedirs('dist')
+
+if not os.path.exists('back'):
+  os.makedirs('back')
+  
 forth = [114, 83]
 third = [173, 122]
 half = [238, 109]

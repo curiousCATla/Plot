@@ -85,6 +85,9 @@ data = {
 if not os.path.exists('dist'):
   os.makedirs('dist')
 
+if not os.path.exists('back'):
+  os.makedirs('back')
+
 
 def nonEmptyIterable(obj):
   """return true if *obj* is iterable"""
@@ -111,7 +114,7 @@ class MultipleLines:
     for plotData in data['children']:
       name = plotData['name']
       print("---->" + name + "<----\n")
-
+      
       def get(key, default=None):
         result = plotData.get(key, None)
         if result is not None: return result
@@ -151,15 +154,27 @@ class MultipleLines:
       linestyles = get('linestyles', [styles[i % len(styles)] for i in range(len(solList))])
       x = get('x')
       for i in range(len(solList)):
+        lineWidth = get('lineWidth', 2)
+        
+        kwargs = {
+          "marker": markers[i],
+          "markersize": get('markerSize', 8),
+          "markerfacecolor": 'none',
+          "color": colors[i % len(colors)],
+          "capsize": get("errorCapSize", 5),
+          "elinewidth": 1,
+          "linestyle": linestyles[i],
+          "linewidth": lineWidth,
+          "label": solList[i],
+          "ecolor": 'r',
+          "yerr": yerror[i] if nonEmptyIterable(yRange) else None
+        }
+        if not lineWidth:
+          kwargs["linestyle"] = "none"
+          del kwargs["linewidth"]
+        
         ax.errorbar(x[i] if nonEmptyIterable(x[0]) else x,
-                    y[i],
-                    marker=markers[i],
-                    markersize=get('markerSize', 8),
-                    markerfacecolor='none', color=colors[i % len(colors)],
-                    capsize=get("errorCapSize", 5),
-                    elinewidth=1,
-                    linestyle=linestyles[i], linewidth=get('lineWidth', 2),
-                    label=solList[i], ecolor='r', yerr=yerror[i] if nonEmptyIterable(yRange) else None)
+                    y[i], **kwargs)
       
       handles, labels = ax.get_legend_handles_labels()
       
@@ -265,9 +280,9 @@ class MultipleLines:
         fig.savefig('dist/' + name + '.pdf', format='pdf', dpi=dpi, bbox_inches="tight")
       
       plt.show(block=False)
-      plt.close('all')
+      # plt.close('all')
       axes.append(ax)
-    
+      
     return axes
 
 
